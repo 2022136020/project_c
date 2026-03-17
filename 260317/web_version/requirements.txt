@@ -1,0 +1,5 @@
+# Created: 2026-03-17
+tensorflow>=2.13
+flask>=3.0
+Pillow>=9.0
+numpy>=1.23

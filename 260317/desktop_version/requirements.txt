@@ -1,0 +1,4 @@
+# Created: 2026-03-17
+tensorflow>=2.13
+Pillow>=9.0
+numpy>=1.23

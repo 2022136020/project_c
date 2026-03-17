@@ -1,0 +1,107 @@
+/* Created: 2026-03-17 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  font-family: "맑은 고딕", "Malgun Gothic", sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+}
+
+h1 { font-size: 1.4rem; color: #89b4fa; }
+
+.status { font-size: 0.85rem; color: #a6adc8; min-height: 1.2em; }
+
+.canvas-wrapper {
+  border: 3px solid #89b4fa;
+  border-radius: 6px;
+  line-height: 0;
+}
+
+#drawCanvas {
+  background: #fff;
+  cursor: crosshair;
+  display: block;
+  border-radius: 3px;
+  touch-action: none;
+}
+
+.result-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+}
+
+.result-digit {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #89b4fa;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* 확률 바 */
+.prob-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prob-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.prob-label { width: 14px; text-align: right; color: #cdd6f4; }
+
+.prob-bar-bg {
+  flex: 1;
+  height: 10px;
+  background: #313244;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.prob-bar-fill {
+  height: 100%;
+  background: #89b4fa;
+  border-radius: 5px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.prob-pct { width: 42px; text-align: right; color: #a6adc8; }
+
+/* 버튼 */
+.btn-row { display: flex; gap: 12px; }
+
+.btn {
+  padding: 8px 28px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+
+.btn-primary   { background: #89b4fa; color: #1e1e2e; }
+.btn-secondary { background: #313244; color: #cdd6f4; }
