@@ -1,28 +1,27 @@
-<!-- Created: 2026-03-17 -->
+<!-- Created: 2026-03-17 | Updated: 2026-03-17 (캔버스 450px로 확장) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>손글씨 숫자 인식기</title>
+  <title>손글씨 인식기</title>
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>손글씨 숫자 인식기</h1>
+    <h1>손글씨 인식기</h1>
     <p id="status" class="status">서버에 연결 중...</p>
 
     <div class="canvas-wrapper">
-      <canvas id="drawCanvas" width="280" height="280"></canvas>
+      <canvas id="drawCanvas" width="450" height="450"></canvas>
     </div>
 
     <div class="result-area">
-      <span id="resultDigit" class="result-digit">?</span>
+      <span id="resultChar" class="result-digit">?</span>
     </div>
 
-    <div class="prob-grid" id="probGrid">
-      <!-- JS로 렌더링 -->
-    </div>
+    <p class="section-label">상위 5개 후보</p>
+    <div class="prob-grid" id="probGrid"></div>
 
     <div class="btn-row">
       <button id="btnPredict" class="btn btn-primary">인식</button>

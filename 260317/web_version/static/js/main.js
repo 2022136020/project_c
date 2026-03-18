@@ -1,31 +1,34 @@
-// Created: 2026-03-17
+// Created: 2026-03-17 | Updated: 2026-03-17 (top-5 결과 표시)
 "use strict";
 
 const canvas      = document.getElementById("drawCanvas");
 const ctx         = canvas.getContext("2d");
 const statusEl    = document.getElementById("status");
-const resultDigit = document.getElementById("resultDigit");
+const resultChar  = document.getElementById("resultChar");
 const probGrid    = document.getElementById("probGrid");
 const btnPredict  = document.getElementById("btnPredict");
 const btnClear    = document.getElementById("btnClear");
 
 const BRUSH_RADIUS = 12;
-let isDrawing = false;
+const TOP_N        = 5;
+let isDrawing      = false;
 
-// ── 확률 바 초기 렌더링 ─────────────────────────────────────────────────
+// ── Top-5 확률 바 초기 렌더링 ───────────────────────────────────────────
 
 const probFills = [];
 const probPcts  = [];
+const probChars = [];
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < TOP_N; i++) {
   const row = document.createElement("div");
   row.className = "prob-row";
   row.innerHTML = `
-    <span class="prob-label">${i}</span>
-    <div class="prob-bar-bg"><div class="prob-bar-fill" id="fill${i}"></div></div>
-    <span class="prob-pct" id="pct${i}">-</span>
+    <span class="prob-char"  id="char${i}">-</span>
+    <div  class="prob-bar-bg"><div class="prob-bar-fill" id="fill${i}"></div></div>
+    <span class="prob-pct"   id="pct${i}">-</span>
   `;
   probGrid.appendChild(row);
+  probChars.push(document.getElementById(`char${i}`));
   probFills.push(document.getElementById(`fill${i}`));
   probPcts.push(document.getElementById(`pct${i}`));
 }
@@ -35,7 +38,8 @@ for (let i = 0; i < 10; i++) {
 function clearCanvas() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  resultDigit.textContent = "?";
+  resultChar.textContent = "?";
+  probChars.forEach(c => c.textContent = "-");
   probFills.forEach(f => f.style.width = "0%");
   probPcts.forEach(p => p.textContent = "-");
 }
@@ -63,7 +67,6 @@ canvas.addEventListener("mousedown",  e => { isDrawing = true;  drawDot(...Objec
 canvas.addEventListener("mousemove",  e => { if (isDrawing) drawDot(...Object.values(getPos(e))); });
 canvas.addEventListener("mouseup",    () => { isDrawing = false; });
 canvas.addEventListener("mouseleave", () => { isDrawing = false; });
-
 canvas.addEventListener("touchstart", e => { e.preventDefault(); isDrawing = true;  drawDot(...Object.values(getPos(e))); }, { passive: false });
 canvas.addEventListener("touchmove",  e => { e.preventDefault(); if (isDrawing) drawDot(...Object.values(getPos(e))); }, { passive: false });
 canvas.addEventListener("touchend",   () => { isDrawing = false; });
@@ -71,8 +74,6 @@ canvas.addEventListener("touchend",   () => { isDrawing = false; });
 // ── 예측 요청 ───────────────────────────────────────────────────────────
 
 async function predict() {
-  const imageData = canvas.toDataURL("image/png");
-
   btnPredict.disabled = true;
   statusEl.textContent = "인식 중...";
 
@@ -80,15 +81,17 @@ async function predict() {
     const res  = await fetch("/predict", {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ image: imageData }),
+      body:    JSON.stringify({ image: canvas.toDataURL("image/png") }),
     });
     const data = await res.json();
 
-    resultDigit.textContent = data.prediction;
-    data.probabilities.forEach((p, i) => {
-      const pct = (p * 100).toFixed(1);
-      probFills[i].style.width = pct + "%";
-      probPcts[i].textContent  = pct + "%";
+    resultChar.textContent = data.prediction;
+
+    data.top5.forEach(({ char, prob }, i) => {
+      const pct = (prob * 100).toFixed(1);
+      probChars[i].textContent  = char;
+      probFills[i].style.width  = pct + "%";
+      probPcts[i].textContent   = pct + "%";
     });
     statusEl.textContent = "완료!";
   } catch (err) {
@@ -106,10 +109,9 @@ btnClear.addEventListener("click",   clearCanvas);
 
 async function checkStatus() {
   try {
-    const res  = await fetch("/status");
-    const data = await res.json();
+    const data = await (await fetch("/status")).json();
     statusEl.textContent = data.ready
-      ? "준비 완료! 숫자를 그리고 [인식] 버튼을 누르세요."
+      ? "준비 완료! 숫자 또는 영문자를 그리고 [인식] 버튼을 누르세요."
       : "모델 학습 중... 잠시 기다려 주세요.";
     if (!data.ready) setTimeout(checkStatus, 3000);
   } catch {

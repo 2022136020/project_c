@@ -1,4 +1,4 @@
-/* Created: 2026-03-17 */
+/* Created: 2026-03-17 | Updated: 2026-03-17 (캔버스 확장) */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -15,14 +15,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
-  max-width: 360px;
+  max-width: 540px;
 }
 
 h1 { font-size: 1.4rem; color: #89b4fa; }
 
-.status { font-size: 0.85rem; color: #a6adc8; min-height: 1.2em; }
+.status { font-size: 0.82rem; color: #a6adc8; min-height: 1.2em; text-align: center; }
 
 .canvas-wrapper {
   border: 3px solid #89b4fa;
@@ -46,47 +46,59 @@ h1 { font-size: 1.4rem; color: #89b4fa; }
 }
 
 .result-digit {
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: bold;
   color: #89b4fa;
-  min-width: 60px;
+  min-width: 64px;
   text-align: center;
 }
 
-/* 확률 바 */
+.section-label {
+  font-size: 0.78rem;
+  color: #6c7086;
+  align-self: flex-start;
+}
+
+/* 확률 바 (top-5) */
 .prob-grid {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .prob-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
-.prob-label { width: 14px; text-align: right; color: #cdd6f4; }
+.prob-char {
+  width: 22px;
+  text-align: center;
+  font-weight: bold;
+  color: #89b4fa;
+  font-size: 1rem;
+}
 
 .prob-bar-bg {
   flex: 1;
-  height: 10px;
+  height: 14px;
   background: #313244;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .prob-bar-fill {
   height: 100%;
   background: #89b4fa;
-  border-radius: 5px;
+  border-radius: 6px;
   width: 0%;
-  transition: width 0.3s ease;
+  transition: width 0.35s ease;
 }
 
-.prob-pct { width: 42px; text-align: right; color: #a6adc8; }
+.prob-pct { width: 46px; text-align: right; color: #a6adc8; font-size: 0.8rem; }
 
 /* 버튼 */
 .btn-row { display: flex; gap: 12px; }
@@ -101,7 +113,8 @@ h1 { font-size: 1.4rem; color: #89b4fa; }
   font-weight: bold;
   transition: opacity 0.15s;
 }
-.btn:hover { opacity: 0.85; }
+.btn:hover    { opacity: 0.85; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary   { background: #89b4fa; color: #1e1e2e; }
 .btn-secondary { background: #313244; color: #cdd6f4; }
