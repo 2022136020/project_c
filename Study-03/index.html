@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상식 퀴즈 게임</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3451d1;
+      --success: #2dc653;
+      --danger: #e63946;
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --text: #212529;
+      --muted: #6c757d;
+      --border: #dee2e6;
+      --radius: 12px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .screen { display: none; width: 100%; max-width: 640px; }
+    .screen.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+
+    h1 { font-size: 1.8rem; font-weight: 800; color: var(--primary); text-align: center; }
+    h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+    .subtitle { text-align: center; color: var(--muted); margin: 8px 0 28px; }
+
+    /* Input */
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+    input[type="text"] {
+      width: 100%; padding: 12px 16px; border: 2px solid var(--border);
+      border-radius: 8px; font-size: 1rem; transition: border-color .2s;
+    }
+    input[type="text"]:focus { outline: none; border-color: var(--primary); }
+    input[type="text"].error { border-color: var(--danger); }
+
+    /* Mode buttons */
+    .mode-btns { display: flex; gap: 10px; margin-bottom: 16px; }
+    .mode-btn {
+      flex: 1; padding: 12px; border: 2px solid var(--border);
+      border-radius: 8px; background: var(--card); font-size: .95rem;
+      font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .mode-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+    /* Category select */
+    #category-select { margin-bottom: 20px; }
+    #category-select.hidden { display: none; }
+    .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cat-btn {
+      padding: 10px; border: 2px solid var(--border); border-radius: 8px;
+      background: var(--card); font-size: .9rem; font-weight: 600;
+      cursor: pointer; transition: all .2s; text-align: center;
+    }
+    .cat-btn.active { border-color: var(--primary); background: #eef1fd; color: var(--primary); }
+    .cat-btn:hover:not(.active) { border-color: #adb5bd; }
+
+    /* Primary button */
+    .btn-primary {
+      width: 100%; padding: 14px; background: var(--primary); color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    /* Score info */
+    .score-info {
+      font-size: .8rem; color: var(--muted); text-align: center;
+      margin-top: 16px; line-height: 1.6;
+    }
+
+    /* ===== Question Screen ===== */
+    .quiz-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .quiz-meta { display: flex; gap: 8px; align-items: center; }
+    .category-badge {
+      background: #eef1fd; color: var(--primary); padding: 4px 10px;
+      border-radius: 20px; font-size: .82rem; font-weight: 700;
+    }
+    .difficulty-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: .82rem; font-weight: 700;
+    }
+    .diff-쉬움 { background: #d1fae5; color: #065f46; }
+    .diff-보통 { background: #fef3c7; color: #92400e; }
+    .diff-어려움 { background: #fee2e2; color: #991b1b; }
+
+    .score-display { font-weight: 700; color: var(--primary); }
+
+    .progress-bar-wrap {
+      background: var(--border); border-radius: 4px; height: 6px; margin-bottom: 24px;
+    }
+    #progress-bar {
+      height: 100%; background: var(--primary); border-radius: 4px;
+      transition: width .4s ease;
+    }
+
+    .progress-text { font-size: .85rem; color: var(--muted); margin-bottom: 6px; text-align: right; }
+
+    #question-text {
+      font-size: 1.15rem; font-weight: 600; line-height: 1.6;
+      margin-bottom: 24px; min-height: 60px;
+    }
+
+    #choices-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+    .choice-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border: 2px solid var(--border);
+      border-radius: 10px; background: var(--card); font-size: .95rem;
+      cursor: pointer; text-align: left; transition: all .15s;
+    }
+    .choice-btn:hover:not(:disabled) { border-color: var(--primary); background: #eef1fd; }
+    .choice-btn:disabled { cursor: default; }
+    .choice-btn.correct { border-color: var(--success); background: #d1fae5; }
+    .choice-btn.wrong { border-color: var(--danger); background: #fee2e2; }
+
+    .choice-label {
+      font-weight: 700; color: var(--primary); min-width: 20px;
+    }
+
+    /* Feedback */
+    .feedback-area {
+      padding: 16px; border-radius: 10px; margin-bottom: 16px;
+    }
+    .feedback-area.hidden { display: none; }
+    .feedback-correct { background: #d1fae5; border: 1px solid #a7f3d0; }
+    .feedback-wrong { background: #fee2e2; border: 1px solid #fca5a5; }
+    .feedback-header { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; }
+    #feedback-icon { font-size: 1.2rem; }
+    .feedback-correct .feedback-header { color: #065f46; }
+    .feedback-wrong .feedback-header { color: #991b1b; }
+    #feedback-score { margin-left: auto; font-size: .9rem; font-weight: 700; }
+    #feedback-explanation { font-size: .9rem; color: var(--text); line-height: 1.5; }
+
+    #next-btn {
+      width: 100%; padding: 13px; background: var(--text); color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity .2s;
+    }
+    #next-btn.hidden { display: none; }
+    #next-btn:hover { opacity: .85; }
+
+    /* ===== Result Screen ===== */
+    .result-header { text-align: center; margin-bottom: 28px; }
+    .result-nickname { font-size: 1.1rem; margin-bottom: 12px; color: var(--muted); }
+    .result-score-wrap { display: flex; align-items: center; justify-content: center; gap: 20px; }
+    .result-score-num { font-size: 3rem; font-weight: 900; color: var(--primary); }
+    .result-score-max { font-size: 1rem; color: var(--muted); }
+
+    .grade-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 60px; height: 60px; border-radius: 50%;
+      font-size: 1.8rem; font-weight: 900;
+    }
+    .grade-S { background: #fef3c7; color: #b45309; }
+    .grade-A { background: #eef1fd; color: var(--primary); }
+    .grade-B { background: #d1fae5; color: #065f46; }
+    .grade-C { background: #fef3c7; color: #92400e; }
+    .grade-D { background: #fee2e2; color: #991b1b; }
+
+    .stats-row {
+      display: flex; justify-content: center; gap: 8px;
+      font-size: .9rem; color: var(--muted); margin-top: 8px;
+    }
+
+    /* Breakdown */
+    .breakdown-row {
+      display: grid; grid-template-columns: 80px 1fr 100px;
+      align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .breakdown-cat { font-weight: 600; font-size: .9rem; }
+    .breakdown-bar-wrap { background: var(--border); border-radius: 4px; height: 8px; }
+    .breakdown-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width .6s ease; }
+    .breakdown-ratio { font-size: .85rem; color: var(--muted); text-align: right; }
+
+    /* Leaderboard */
+    .leaderboard-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    th { padding: 10px 8px; text-align: center; background: var(--bg); font-weight: 700; }
+    td { padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--border); }
+    tr.my-record td { background: #eef1fd; }
+
+    .section-title { font-size: 1rem; font-weight: 700; margin: 24px 0 12px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    #restart-btn {
+      width: 100%; padding: 13px; background: var(--primary); color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; margin-top: 20px; transition: background .2s;
+    }
+    #restart-btn:hover { background: var(--primary-dark); }
+
+    @media (max-width: 480px) {
+      .card { padding: 20px; }
+      h1 { font-size: 1.5rem; }
+      .result-score-num { font-size: 2.5rem; }
+      .breakdown-row { grid-template-columns: 70px 1fr 80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 시작 화면 ===== -->
+  <div id="start-screen" class="screen active">
+    <div class="card">
+      <h1>상식 퀴즈 게임</h1>
+      <p class="subtitle">한국사 · 과학 · 지리 · 일반상식</p>
+
+      <div class="input-group">
+        <label for="nickname">닉네임</label>
+        <input type="text" id="nickname" placeholder="닉네임을 입력하세요" maxlength="12">
+      </div>
+
+      <div class="input-group">
+        <label>게임 모드</label>
+        <div class="mode-btns">
+          <button id="mode-all" class="mode-btn">전체 (40문제)</button>
+          <button id="mode-category" class="mode-btn">카테고리별 (10문제)</button>
+        </div>
+        <div id="category-select" class="hidden">
+          <div class="cat-grid">
+            <button class="cat-btn" data-category="한국사">한국사</button>
+            <button class="cat-btn" data-category="과학">과학</button>
+            <button class="cat-btn" data-category="지리">지리</button>
+            <button class="cat-btn" data-category="일반상식">일반상식</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn-primary">퀴즈 시작</button>
+
+      <p class="score-info">
+        난이도별 점수: 쉬움 10점 · 보통 15점 · 어려움 20점<br>
+        등급: S(90%↑) · A(70%↑) · B(50%↑) · C(30%↑) · D
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== 문제 화면 ===== -->
+  <div id="question-screen" class="screen">
+    <div class="card">
+      <div class="quiz-header">
+        <div class="quiz-meta">
+          <span class="category-badge" id="category-label"></span>
+          <span class="difficulty-badge" id="difficulty-label"></span>
+        </div>
+        <span class="score-display" id="score-display">0점</span>
+      </div>
+
+      <p class="progress-text" id="progress-text"></p>
+      <div class="progress-bar-wrap">
+        <div id="progress-bar" style="width:0%"></div>
+      </div>
+
+      <p id="question-text"></p>
+
+      <div id="choices-container"></div>
+
+      <div id="feedback-area" class="feedback-area hidden">
+        <div class="feedback-header">
+          <span id="feedback-icon"></span>
+          <span id="feedback-title"></span>
+          <span id="feedback-score"></span>
+        </div>
+        <p id="feedback-explanation"></p>
+      </div>
+
+      <button id="next-btn" class="hidden">다음 문제 →</button>
+    </div>
+  </div>
+
+  <!-- ===== 결과 화면 ===== -->
+  <div id="result-screen" class="screen">
+    <div class="card">
+      <div class="result-header">
+        <h1>결과</h1>
+        <p class="result-nickname" id="result-nickname"></p>
+        <div class="result-score-wrap">
+          <div>
+            <div class="result-score-num" id="result-score"></div>
+            <div class="result-score-max">/ <span id="result-max-score"></span>점</div>
+          </div>
+          <span class="grade-badge" id="result-grade"></span>
+        </div>
+        <div class="stats-row">
+          <span>정답: <strong id="result-correct"></strong></span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <h2 class="section-title">카테고리별 정답률</h2>
+      <div id="category-breakdown"></div>
+
+      <hr class="divider">
+
+      <h2 class="section-title">순위표 (TOP 10)</h2>
+      <div class="leaderboard-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>순위</th><th>닉네임</th><th>점수</th><th>등급</th><th>모드</th><th>일시</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+
+      <button id="restart-btn">다시 하기</button>
+    </div>
+  </div>
+
+  <script src="quiz-data.js"></script>
+  <script src="quiz-game.js"></script>
+</body>
+</html>
