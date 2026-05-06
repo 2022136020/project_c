@@ -7,7 +7,32 @@
       "Bash(npm list:*)",
       "Bash(npm root:*)",
       "Bash(npm bin:*)",
-      "Bash(powershell -Command \"[System.Environment]::GetEnvironmentVariable\\('Path', 'User'\\)\")"
+      "Bash(powershell -Command \"[System.Environment]::GetEnvironmentVariable\\('Path', 'User'\\)\")",
+      "WebSearch",
+      "Bash(claude mcp:*)",
+      "Read(//c/Users/주성현/**)",
+      "Bash(cmd.exe:*)",
+      "Bash(powershell:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(pip list:*)",
+      "Bash(python -m pip list)",
+      "Bash(python3 -m pip list)",
+      "Bash(where python:*)",
+      "Skill(claude-api)",
+      "Bash(npm install:*)",
+      "Bash(printenv)",
+      "Bash(npm start:*)",
+      "Bash(node:*)",
+      "Bash(pkill -f \"node server.js\")",
+      "Bash(netstat -ano)",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -I{} taskkill //PID {} //F)",
+      "Bash(taskkill /PID 35504 /F)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s http://localhost:3000)",
+      "mcp__pdf-reader__get_pdf_metadata",
+      "mcp__pdf-reader__read_pdf_text",
+      "mcp__pdf-reader__extract_page_range"
     ]
   }
 }
