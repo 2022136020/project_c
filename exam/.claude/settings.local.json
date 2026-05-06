@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip list *)",
+      "Bash(py --version)",
+      "Bash(python3.exe --version)",
+      "Bash(py -m pip list)",
+      "Bash(py -m pip install opencv-python)",
+      "Bash(py app.py)",
+      "Bash(curl -s http://localhost:5001/)",
+      "Bash(py *)",
+      "Bash(curl -s -X POST http://localhost:5001/process -F image=@/c/project_c/exam/processor.py -F remove_colors=true)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist /FI \"PID eq 67488\")",
+      "Bash(tasklist /FI \"PID eq 30924\")",
+      "Bash(curl -s -X POST http://localhost:5001/process -F remove_colors=true -F remove_pencil=true -F correct_perspective=false -F aggressive_pencil=false)",
+      "Bash(curl -sv -X POST http://localhost:5001/process)",
+      "Bash(curl -s http://localhost:5002/)"
+    ]
+  }
+}
