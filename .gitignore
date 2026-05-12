@@ -20,6 +20,10 @@ tmp_pdfs/
 .DS_Store
 Thumbs.db
 
+# 개인 관리 문서 (GitHub 비공개)
+HANDOVER.md
+PROGRESS.md
+
 # Claude 내부 설정
 .claude/settings.local.json
 .claude/agents/
