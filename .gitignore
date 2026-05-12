@@ -1,0 +1,25 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.env
+venv/
+.venv/
+
+# 결과물
+exam/results/
+tmp_pdfs/
+
+# 시스템
+.DS_Store
+Thumbs.db
+
+# Claude 내부 설정
+.claude/settings.local.json
+.claude/agents/
