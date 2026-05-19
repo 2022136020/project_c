@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'signup_screen.dart';
 
+const _demoEmail = 'demo@portfolio-tracker.app';
+const _demoPassword = 'demo1234!';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -17,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
 
   bool _isLoading = false;
+  bool _isDemoLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
 
@@ -45,9 +49,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _signInAsDemo() async {
+    setState(() {
+      _isDemoLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      await _authService.signInWithEmail(_demoEmail, _demoPassword);
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = _authService.getErrorMessage(e));
+    } finally {
+      if (mounted) setState(() => _isDemoLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isAnyLoading = _isLoading || _isDemoLoading;
 
     return Scaffold(
       body: SafeArea(
@@ -117,8 +136,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                   const SizedBox(height: 24),
+                  // 로그인 버튼
                   FilledButton(
-                    onPressed: _isLoading ? null : _signIn,
+                    onPressed: isAnyLoading ? null : _signIn,
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
@@ -130,7 +150,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : const Text('로그인', style: TextStyle(fontSize: 16)),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
+                  // 관리자 로그인 버튼
+                  OutlinedButton(
+                    onPressed: isAnyLoading ? null : _signInAsDemo,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: _isDemoLoading
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.primary),
+                          )
+                        : const Text('관리자로 로그인',
+                            style: TextStyle(fontSize: 16)),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
