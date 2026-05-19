@@ -12,11 +12,11 @@ style: |
   section.title {
     text-align: center;
     justify-content: center;
-    background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%);
-    color: white;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    color: #1e1b4b;
   }
-  section.title h1 { font-size: 2.4em; color: white; }
-  section.title p { font-size: 1.1em; color: #c7d2fe; }
+  section.title h1 { font-size: 2.4em; color: #3730a3; }
+  section.title p { font-size: 1.1em; color: #6366f1; }
   h2 { color: #3730a3; border-bottom: 2px solid #e0e7ff; padding-bottom: 8px; }
   table { font-size: 0.85em; width: 100%; }
   th { background: #e0e7ff; color: #1e1b4b; }
