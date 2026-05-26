@@ -215,7 +215,7 @@ pagenum(s, 5)
 layers = [
     ("Presentation",  "screens/",   "화면 렌더링 · 사용자 입력 처리",         "Flutter Widget"),
     ("Application",   "services/",  "Firebase 호출 · 상태 관리",              "FirestoreService"),
-    ("Domain",        "models/",    "수익률 · 잔액 계산 비즈니스 규칙",        "Position / Account"),
+    ("Domain",        "models/",    "수익률 · 잔액 등 계산식 정의",            "Position / Account"),
     ("Data",          "Firebase",   "Firestore CRUD · Auth 인증",              "Cloud Firestore / Auth"),
 ]
 
@@ -343,7 +343,7 @@ issues = [
      "Firestore 보안 규칙 검증 어려움 — 다른 사용자가 타 계정 데이터에\n"
      "접근하지 못하도록 규칙을 작성했으나 침투 테스트 환경 없음"),
     ("앱 배포 경험 없음",
-     "Google Play Console 등록 절차 및 APK 서명 과정 첫 경험\n"
+     "Google Play Console 등록 절차 및 APK 서명 과정 첫 시도\n"
      "배포 오류 발생 시 대응 방법 조언 필요"),
 ]
 for i, (title, body) in enumerate(issues):
@@ -355,28 +355,11 @@ for i, (title, body) in enumerate(issues):
 
 
 # ════════════════════════════════════════════════════════════
-# 10. 질문 받습니다
-# ════════════════════════════════════════════════════════════
-s = prs.slides.add_slide(BLANK)
-rect(s, 0, 0, 13.33, 7.5, fill=WHITE)
-rect(s, 0, 4.6, 13.33, 0.05, fill=INDIGO)
-rect(s, 0, 4.65, 13.33, 2.85, fill=LGRAY)
-
-txt(s, "질문 받습니다", 1, 1.5, 11, 1.5,
-    size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
-txt(s, "ADR 세부 내용은 다음 슬라이드에 수록되어 있습니다",
-    1, 3.2, 11, 0.6, size=16, color=GRAY, align=PP_ALIGN.CENTER)
-txt(s, "Portfolio Tracker  ·  Jooseonghyeon  ·  2026.05",
-    1, 5.1, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
-pagenum(s, 10)
-
-
-# ════════════════════════════════════════════════════════════
-# 11. ADR-0001  모바일 프레임워크
+# 10. ADR-0001  모바일 프레임워크
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0001  —  모바일 프레임워크 선택")
-pagenum(s, 11)
+pagenum(s, 10)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -389,11 +372,11 @@ for i, (opt, sel) in enumerate([
 
 
 # ════════════════════════════════════════════════════════════
-# 12. ADR-0002  아키텍처 패턴
+# 11. ADR-0002  아키텍처 패턴
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0002  —  아키텍처 패턴 선택")
-pagenum(s, 12)
+pagenum(s, 11)
 
 txt(s, "선택지 비교", 0.5, 1.08, 6.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -423,11 +406,11 @@ for i, (a, b, c, hdr) in enumerate(table_rows):
 
 
 # ════════════════════════════════════════════════════════════
-# 13. ADR-0003  백엔드 서비스
+# 12. ADR-0003  백엔드 서비스
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0003  —  백엔드 서비스 선택")
-pagenum(s, 13)
+pagenum(s, 12)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -437,6 +420,21 @@ for i, (opt, sel) in enumerate([
     ("Firebase (Auth + Firestore)", True),
 ]):
     chip(s, opt, 0.5, 1.52 + i * 1.38, 12.3, 1.12, selected=sel)
+
+
+# ════════════════════════════════════════════════════════════
+# 13. 감사합니다
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+rect(s, 0, 0, 13.33, 7.5, fill=WHITE)
+rect(s, 0, 5.1, 13.33, 0.05, fill=INDIGO)
+rect(s, 0, 5.15, 13.33, 2.35, fill=LGRAY)
+
+txt(s, "감사합니다", 1, 1.6, 11, 1.5,
+    size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
+txt(s, "Portfolio Tracker  ·  Jooseonghyeon  ·  2026.05",
+    1, 5.55, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
+pagenum(s, 13)
 
 
 # ── 저장 ─────────────────────────────────────────────────
