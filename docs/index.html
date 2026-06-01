@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Tracker 발표자료</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; }
+    .slide { max-width: 100%; max-height: 80vh; border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .controls { margin-top: 20px; display: flex; align-items: center; gap: 16px; }
+    button { background: #333; color: #fff; border: 1px solid #555; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #444; }
+    button:disabled { opacity: 0.3; cursor: default; }
+    .counter { color: #aaa; font-size: 15px; min-width: 80px; text-align: center; }
+    .progress { position: fixed; top: 0; left: 0; height: 3px; background: #4a9eff; transition: width 0.2s; }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <img id="slide-1" class="slide" src="slides/slide_01.png" style="display:block">
+  <img id="slide-2" class="slide" src="slides/slide_02.png" style="display:none">
+  <img id="slide-3" class="slide" src="slides/slide_03.png" style="display:none">
+  <img id="slide-4" class="slide" src="slides/slide_04.png" style="display:none">
+  <img id="slide-5" class="slide" src="slides/slide_05.png" style="display:none">
+  <img id="slide-6" class="slide" src="slides/slide_06.png" style="display:none">
+  <img id="slide-7" class="slide" src="slides/slide_07.png" style="display:none">
+  <img id="slide-8" class="slide" src="slides/slide_08.png" style="display:none">
+  <img id="slide-9" class="slide" src="slides/slide_09.png" style="display:none">
+  <img id="slide-10" class="slide" src="slides/slide_10.png" style="display:none">
+  <img id="slide-11" class="slide" src="slides/slide_11.png" style="display:none">
+  <img id="slide-12" class="slide" src="slides/slide_12.png" style="display:none">
+  <img id="slide-13" class="slide" src="slides/slide_13.png" style="display:none">
+
+  <div class="controls">
+    <button id="prev" onclick="move(-1)" disabled>&#9664; 이전</button>
+    <span class="counter" id="counter">1 / 13</span>
+    <button id="next" onclick="move(1)">다음 &#9654;</button>
+  </div>
+
+  <script>
+    var current = 1;
+    var total = 13;
+
+    function move(dir) {
+      document.getElementById('slide-' + current).style.display = 'none';
+      current += dir;
+      document.getElementById('slide-' + current).style.display = 'block';
+      document.getElementById('counter').textContent = current + ' / ' + total;
+      document.getElementById('prev').disabled = current === 1;
+      document.getElementById('next').disabled = current === total;
+      document.getElementById('progress').style.width = (current / total * 100) + '%';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.key === 'ArrowRight' || e.key === 'ArrowDown') && current < total) move(1);
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') && current > 1) move(-1);
+    });
+
+    document.getElementById('progress').style.width = (1 / total * 100) + '%';
+  </script>
+</body>
+</html>
