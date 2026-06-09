@@ -20,7 +20,7 @@ GREEN    = RGBColor(0x2E, 0x7D, 0x32)
 AMBER    = RGBColor(0xE6, 0x5C, 0x00)
 
 BLANK = prs.slide_layouts[6]
-TOTAL_SLIDES = 14
+TOTAL_SLIDES = 15
 
 # ── 헬퍼 ──────────────────────────────────────────────────
 def rect(s, l, t, w, h, fill=None, line_color=None, lw=0.8):
@@ -80,12 +80,12 @@ txt(s, "Portfolio Tracker", 1, 1.0, 11, 1.4,
     size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
 txt(s, "되돌아보는 투자자가 앞으로 나아간다",
     1, 2.6, 11, 0.6, size=20, color=GRAY, align=PP_ALIGN.CENTER)
-txt(s, "중간 발표",
+txt(s, "최종 발표",
     1, 3.4, 11, 0.55, size=18, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
 
 txt(s, "Flutter + Firebase  ·  개인 자산 포트폴리오 관리 앱",
     1, 5.5, 11, 0.5, size=14, color=GRAY, align=PP_ALIGN.CENTER)
-txt(s, "Jooseonghyeon  ·  2026.05",
+txt(s, "Jooseonghyeon  ·  2026.06",
     1, 6.0, 11, 0.45, size=12, color=GRAY, align=PP_ALIGN.CENTER)
 
 
@@ -256,7 +256,7 @@ rows = [
     ("✅ 완료", "포지션 관리", "진입·정리 / 수익률·손익 계산 / 복기 메모",     GREEN),
     ("✅ 완료", "시각화",      "수익률 막대 차트 / 누적 손익 라인 차트 / 기간 필터",  GREEN),
     ("✅ 완료", "대시보드",    "총 잔액 / 누적 손익 / 승률 / 최근 포지션 목록",  GREEN),
-    ("🚧 진행", "문서·배포",   "setup·testing 문서 / README 완비",              AMBER),
+    ("✅ 완료", "문서·배포",   "setup·testing 문서 / README 완비",              GREEN),
     ("⏳ 예정", "앱 빌드",     "Android APK 빌드 및 설치 파일 생성",            GRAY),
 ]
 for i, (status, cat, desc, color) in enumerate(rows):
@@ -268,7 +268,7 @@ for i, (status, cat, desc, color) in enumerate(rows):
     txt(s, desc,   4.5,  ty + 0.16, 8.1, 0.38, size=12, color=DARK)
 
 rect(s, 0.5, 6.85 - 0.72, 12.3, 0.62, fill=LGRAY, line_color=BORDER)
-txt(s, "전체 진척  ·  Must 기능 95% 완료  (5단계 구현 완료 / 문서·배포 진행 중)",
+txt(s, "전체 진척  ·  Must 기능 99% 완료  (6단계 완료 / Android APK 빌드 예정)",
     0.72, 6.85 - 0.55, 12.0, 0.42, size=13, bold=True, color=INDIGO)
 
 
@@ -358,7 +358,7 @@ for i, (title, body) in enumerate(issues):
 # 10. 개발 방식 — AI 워크플로우 (가산점 B)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "9.  개발 방식 — AI 워크플로우", "본인만의 기법 구성")
+header(s, "9.  개발 방식 — AI 워크플로우", "Jooseonghyeon 기법 구성")
 pagenum(s, 10)
 
 techs = [
@@ -368,9 +368,9 @@ techs = [
         "새 프로젝트에 이 파일 하나만 전달하면 AI 운영 체계가 즉시 구성됨",
     ),
     (
-        "기법 2  —  도메인 특화 서브에이전트",
-        "feature-debugger (/dg) : 앱 기능 6개 영역 체크리스트 기반 정적 분석\n"
-        "pre-presentation-checker (/pc) : 발표 전 점수 · 제출물 종합 점검",
+        "기법 2  —  도메인 특화 서브에이전트 + 암묵지 기록",
+        "feature-debugger (/dg): 앱 기능 6개 영역 체크리스트 기반 정적 분석 — 반복 점검 자동화\n"
+        "llm-wiki: Claude Code 사용 인사이트 11개 항목 운영 (notes/llm-wiki.md)",
     ),
     (
         "기법 3  —  단계별 개발 계획 · 진행",
@@ -388,11 +388,39 @@ for i, (title, body) in enumerate(techs):
 
 
 # ════════════════════════════════════════════════════════════
-# 11. ADR-0001  모바일 프레임워크
+# 11. 개발 방식 — AI 워크플로우 (jeongkyeongwoo)
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "10.  개발 방식 — AI 워크플로우", "jeongkyeongwoo 기법 구성")
+pagenum(s, 11)
+
+techs_jkw = [
+    (
+        "기법 1  —  pre-presentation-checker (/pc)",
+        "발표 전 제출 서류·가산점 요소·앱 상태를 평가 루브릭 기준으로 종합 점검\n"
+        "미완료 항목과 현재 점수를 한눈에 보고 → 발표 당일 사각지대 없이 준비",
+    ),
+    (
+        "기법 2  —  단계별 보고 방식",
+        "각 구현 단계 완료 후 AI에게 구현 내용 보고 요청 → 놓친 항목·개선점 자동 파악\n"
+        "비전공자도 이해할 수 있게 요약 보고 → 코드 이해도 유지 + Q&A 즉답 가능",
+    ),
+]
+for i, (title, body) in enumerate(techs_jkw):
+    ty = 1.55 + i * 2.4
+    rect(s, 0.5, ty, 12.3, 2.1, line_color=BORDER)
+    rect(s, 0.5, ty, 0.06, 2.1, fill=INDIGO)
+    rect(s, 0.5, ty, 12.3, 0.48, fill=LGRAY)
+    txt(s, title, 0.72, ty + 0.08, 12.0, 0.35, size=13, bold=True, color=INDIGO)
+    txt(s, body,  0.72, ty + 0.62, 11.8, 1.3, size=12, color=DARK)
+
+
+# ════════════════════════════════════════════════════════════
+# 12. ADR-0001  모바일 프레임워크
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0001  —  모바일 프레임워크 선택")
-pagenum(s, 11)
+pagenum(s, 12)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -405,11 +433,11 @@ for i, (opt, sel) in enumerate([
 
 
 # ════════════════════════════════════════════════════════════
-# 12. ADR-0002  아키텍처 패턴
+# 13. ADR-0002  아키텍처 패턴
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0002  —  아키텍처 패턴 선택")
-pagenum(s, 12)
+pagenum(s, 13)
 
 txt(s, "선택지 비교", 0.5, 1.08, 6.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -439,11 +467,11 @@ for i, (a, b, c, hdr) in enumerate(table_rows):
 
 
 # ════════════════════════════════════════════════════════════
-# 13. ADR-0003  백엔드 서비스
+# 14. ADR-0003  백엔드 서비스
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0003  —  백엔드 서비스 선택")
-pagenum(s, 13)
+pagenum(s, 14)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -456,7 +484,7 @@ for i, (opt, sel) in enumerate([
 
 
 # ════════════════════════════════════════════════════════════
-# 14. 감사합니다
+# 15. 감사합니다
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 rect(s, 0, 0, 13.33, 7.5, fill=WHITE)
@@ -465,13 +493,13 @@ rect(s, 0, 5.15, 13.33, 2.35, fill=LGRAY)
 
 txt(s, "감사합니다", 1, 1.6, 11, 1.5,
     size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
-txt(s, "Portfolio Tracker  ·  Jooseonghyeon  ·  2026.05",
+txt(s, "Portfolio Tracker  ·  Jooseonghyeon  ·  2026.06",
     1, 5.55, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
-pagenum(s, 14)
+pagenum(s, 15)
 
 
 # ── 저장 ─────────────────────────────────────────────────
-out = r"C:\project_c\portfolio-tracker\presentation\portfolio-tracker.pptx"
+out = r"C:\project_c\portfolio-tracker\presentation\portfolio-tracker-final.pptx"
 os.makedirs(os.path.dirname(out), exist_ok=True)
 prs.save(out)
 print(f"저장 완료: {out}")
