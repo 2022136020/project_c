@@ -23,8 +23,15 @@ class FirestoreService {
   Future<void> addAccount(Account account) =>
       _accounts.add(account.toMap());
 
-  Future<void> deleteAccount(String id) =>
-      _accounts.doc(id).delete();
+  Future<void> deleteAccount(String id) async {
+    final txSnap = await _transactions(id).get();
+    final batch = _db.batch();
+    for (final doc in txSnap.docs) {
+      batch.delete(doc.reference);
+    }
+    batch.delete(_accounts.doc(id));
+    await batch.commit();
+  }
 
   // ── 입출금 ────────────────────────────────────────────────
   Stream<List<AccountTransaction>> transactionsStream(String accountId) =>

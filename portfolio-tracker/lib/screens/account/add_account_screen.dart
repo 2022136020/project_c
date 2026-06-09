@@ -16,14 +16,23 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _service = FirestoreService();
 
   String _type = 'stock';
+  String _currency = 'KRW';
+  bool _isCustomCurrency = false;
+  final _customCurrencyController = TextEditingController();
   bool _isLoading = false;
+
+  static const _presetCurrencies = ['KRW', 'USD', 'USDT'];
 
   @override
   void dispose() {
     _nameController.dispose();
     _balanceController.dispose();
+    _customCurrencyController.dispose();
     super.dispose();
   }
+
+  String get _resolvedCurrency =>
+      _isCustomCurrency ? _customCurrencyController.text.trim() : _currency;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -34,6 +43,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         name: _nameController.text.trim(),
         type: _type,
         initialBalance: double.parse(_balanceController.text.replaceAll(',', '')),
+        currency: _resolvedCurrency.isEmpty ? 'KRW' : _resolvedCurrency,
         createdAt: DateTime.now(),
       ));
       if (mounted) Navigator.pop(context);
@@ -81,14 +91,55 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 onSelectionChanged: (s) => setState(() => _type = s.first),
               ),
               const SizedBox(height: 16),
+              const Text('통화', style: TextStyle(fontSize: 14, color: Colors.grey)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ..._presetCurrencies.map((c) => ChoiceChip(
+                        label: Text(c),
+                        selected: !_isCustomCurrency && _currency == c,
+                        onSelected: (_) => setState(() {
+                          _currency = c;
+                          _isCustomCurrency = false;
+                        }),
+                      )),
+                  ChoiceChip(
+                    label: const Text('기타'),
+                    selected: _isCustomCurrency,
+                    onSelected: (_) => setState(() => _isCustomCurrency = true),
+                  ),
+                ],
+              ),
+              if (_isCustomCurrency) ...[
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _customCurrencyController,
+                  decoration: const InputDecoration(
+                    labelText: '통화 직접 입력',
+                    hintText: '예: BTC, ETH, JPY',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) {
+                    if (_isCustomCurrency && (v == null || v.trim().isEmpty)) {
+                      return '통화를 입력해 주세요.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _balanceController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '초기 잔액 (원)',
+                decoration: InputDecoration(
+                  labelText: '초기 잔액',
                   hintText: '0',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
+                  prefixText: _isCustomCurrency
+                      ? (_customCurrencyController.text.trim().isEmpty ? '' : '${_customCurrencyController.text.trim()} ')
+                      : (_currency == 'KRW' ? '₩ ' : _currency == 'USD' ? '\$ ' : 'USDT '),
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return '초기 잔액을 입력해 주세요.';

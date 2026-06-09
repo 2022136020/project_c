@@ -55,14 +55,18 @@ class AccountDetailScreen extends StatelessWidget {
               _BalanceCard(
                   initialBalance: account.initialBalance,
                   currentBalance: balance,
-                  type: account.type),
+                  type: account.type,
+                  symbol: account.currencySymbol),
               const Divider(height: 1),
               Expanded(
                 child: txs.isEmpty
                     ? const Center(child: Text('입출금 내역이 없습니다.'))
                     : ListView.builder(
                         itemCount: txs.length,
-                        itemBuilder: (_, i) => _TxTile(tx: txs[i]),
+                        itemBuilder: (_, i) => _TxTile(
+                          tx: txs[i],
+                          symbol: account.currencySymbol,
+                        ),
                       ),
               ),
             ],
@@ -86,10 +90,12 @@ class _BalanceCard extends StatelessWidget {
   final double initialBalance;
   final double currentBalance;
   final String type;
+  final String symbol;
   const _BalanceCard(
       {required this.initialBalance,
       required this.currentBalance,
-      required this.type});
+      required this.type,
+      required this.symbol});
 
   @override
   Widget build(BuildContext context) {
@@ -114,12 +120,12 @@ class _BalanceCard extends StatelessWidget {
           ]),
           const SizedBox(height: 8),
           Text(
-            '₩${_fmt(currentBalance)}',
+            '$symbol${_fmt(currentBalance)}',
             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
-            '${diff >= 0 ? '+' : ''}₩${_fmt(diff)} (초기 ₩${_fmt(initialBalance)})',
+            '${diff >= 0 ? '+' : ''}$symbol${_fmt(diff)} (초기 $symbol${_fmt(initialBalance)})',
             style: TextStyle(color: color, fontSize: 13),
           ),
         ],
@@ -133,7 +139,8 @@ class _BalanceCard extends StatelessWidget {
 
 class _TxTile extends StatelessWidget {
   final AccountTransaction tx;
-  const _TxTile({required this.tx});
+  final String symbol;
+  const _TxTile({required this.tx, required this.symbol});
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +156,7 @@ class _TxTile extends StatelessWidget {
         ),
       ),
       title: Text(
-        '${isDeposit ? '+' : '-'}₩${tx.amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}',
+        '${isDeposit ? '+' : '-'}$symbol${tx.amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}',
         style: TextStyle(
           fontWeight: FontWeight.w600,
           color: isDeposit ? Colors.blue : Colors.red,
