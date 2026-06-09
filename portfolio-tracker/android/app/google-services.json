@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "120507805270",
+    "project_id": "portfolio-tracker-d3939",
+    "storage_bucket": "portfolio-tracker-d3939.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:120507805270:android:05af664fefeed5438b55f7",
+        "android_client_info": {
+          "package_name": "com.portfolio.tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVs6DgBwIFNA0a0BSvxkCz86MxrRfnVCs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
