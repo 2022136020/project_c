@@ -49,6 +49,7 @@ flutter run
 | [docs/setup.md](docs/setup.md) | 환경 구축 및 실행 방법 |
 | [docs/architecture.md](docs/architecture.md) | 시스템 설계 및 디렉토리 구조 |
 | [docs/testing.md](docs/testing.md) | 테스트 체크리스트 |
+| [docs/deploy.md](docs/deploy.md) | Android APK 빌드 및 Firebase 배포 방법 |
 | [.planning/](.planning/) | 기획 문서 (비전, PRD, WBS, 일정) |
 | [.planning/decisions/](.planning/decisions/) | ADR (아키텍처 결정 기록) |
 
