@@ -332,7 +332,7 @@ for i, (title, body) in enumerate(issues):
 # 9. 개발 방식 — AI 워크플로우 (가산점 A+1 · B+2 · C+1)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "8.  개발 방식 — AI 워크플로우", "팀원 A")
+header(s, "8.  개발 방식 — AI 워크플로우", "주성현")
 pagenum(s, 9)
 
 items_a = [
@@ -366,7 +366,7 @@ for i, (title, body) in enumerate(items_a):
 # 10. 개발 방식 — AI 워크플로우 (팀원 B, 가산점 B+2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "9.  개발 방식 — AI 워크플로우", "팀원 B")
+header(s, "9.  개발 방식 — AI 워크플로우", "정경우")
 pagenum(s, 10)
 
 items_b = [
