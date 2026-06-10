@@ -20,7 +20,7 @@ GREEN    = RGBColor(0x2E, 0x7D, 0x32)
 AMBER    = RGBColor(0xE6, 0x5C, 0x00)
 
 BLANK = prs.slide_layouts[6]
-TOTAL_SLIDES = 14
+TOTAL_SLIDES = 16
 
 # ── 헬퍼 ──────────────────────────────────────────────────
 def rect(s, l, t, w, h, fill=None, line_color=None, lw=0.8):
@@ -331,67 +331,100 @@ for i, (title, body) in enumerate(issues):
 # ════════════════════════════════════════════════════════════
 # 9. 개발 방식 — AI 워크플로우 (가산점 A+1 · B+2 · C+1)
 # ════════════════════════════════════════════════════════════
+# 9. 개발 방식 — AI 워크플로우 (주성현 1/2)
+# ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "8.  개발 방식 — AI 워크플로우", "주성현")
+header(s, "8.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
 pagenum(s, 9)
 
-items_a = [
-    ("feature-debugger 에이전트 직접 제작 + /dg 실사용",
+def ai_item(s, ty, bh, badge_color, badge_txt, title, body):
+    rect(s, 0.5, ty, 12.3, bh, line_color=BORDER)
+    rect(s, 0.5, ty, 12.3, 0.44, fill=LGRAY)
+    rect(s, 0.5, ty, 1.6, 0.44, fill=badge_color)
+    txt(s, badge_txt, 0.5, ty, 1.6, 0.44,
+        size=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    txt(s, title, 2.25, ty + 0.07, 10.4, 0.30, size=12, bold=True, color=INDIGO)
+    txt(s, body,  0.72, ty + 0.52, 11.8, bh - 0.58, size=10.5, color=DARK)
+
+for i, (badge_color, badge_txt, title, body) in enumerate([
+    (AMBER,  "A  +1",
+     "feature-debugger 에이전트 직접 제작 + /dg 실사용",
      ".claude/agents/feature-debugger.md  직접 제작\n"
      "앱 기능 6개 영역(인증 · 계좌 · 포지션 · 차트 · 대시보드 · Firebase)을 /dg 명령어 하나로 반복 점검 수행"),
-    ("기법 1  —  단일 md 부트스트랩  (AUTHORING.Jooseonghyeon.v0.1.0.md)",
+    (INDIGO, "B  +2",
+     "기법 1  —  단일 md 부트스트랩  (AUTHORING.Jooseonghyeon.v0.1.0.md)",
      "Rules · Skills · Commands 전체를 파일 하나로 자동 세팅\n"
      "새 프로젝트에 이 파일 하나만 주면 AI 운영 체계 즉시 구성"),
-    ("기법 3  —  단계별 개발 계획 · 진행",
+    (INDIGO, "B  +2",
+     "기법 3  —  단계별 개발 계획 · 진행",
      "개발 전 단계별 계획 수립 → AI 구현 → 직접 점검 · 이해 → 다음 단계 진행\n"
      "AI 의존 개발에서 코드 이해도를 유지하기 위한 개인 워크플로우"),
-    ("LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
-     "개발 중 배운 AI 사용 인사이트 직접 기록\n"
-     "Flutter 실행 환경 / 에이전트 호출법 / ADR 개념 / python-pptx 단위 변환 등"),
-    ("AI Agent 리포트  —  이 발표에서 Claude Code 활용 사례 직접 발표",
-     "Claude Code(Anthropic, 2024~)로 서브에이전트 제작 · 커스텀 명령어 운영 · 단계별 개발 수행\n"
-     "최근 6개월 이내 지속 업데이트 도구 · 출처: claude.ai/code  (공식 문서)"),
-]
-box_h = 1.12
-gap   = 1.23
-for i, (title, body) in enumerate(items_a):
-    ty = 1.08 + i * gap
-    rect(s, 0.5, ty, 12.3, box_h, line_color=BORDER)
-    rect(s, 0.5, ty, 12.3, 0.4, fill=LGRAY)
-    txt(s, title, 0.72, ty + 0.05, 12.0, 0.32, size=12, bold=True, color=INDIGO)
-    txt(s, body,  0.72, ty + 0.48, 12.0, 0.58, size=10, color=DARK)
+]):
+    ai_item(s, 1.0 + i * 2.0, 1.85, badge_color, badge_txt, title, body)
 
 
 # ════════════════════════════════════════════════════════════
-# 10. 개발 방식 — AI 워크플로우 (팀원 B, 가산점 B+2)
+# 10. 개발 방식 — AI 워크플로우 (주성현 2/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "9.  개발 방식 — AI 워크플로우", "정경우")
+header(s, "8.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
 pagenum(s, 10)
 
-items_b = [
-    ("pre-presentation-checker 에이전트 직접 제작 + /pc 실사용",
-     ".claude/agents/pre-presentation-checker.md  직접 제작\n"
-     "발표 전 제출 서류 · 가산점 · 앱 상태를 평가 루브릭 기준으로 자동 점검 → 미완료 항목 우선 보고"),
-    ("기법 1  —  단일 md 부트스트랩  (AUTHORING.jeongkyeongwoo.v0.1.0.md)",
-     "Rules · Skills · Commands 전체를 파일 하나로 자동 세팅\n"
-     "새 프로젝트에 이 파일 하나만 주면 AI 운영 체계 즉시 구성"),
-    ("기법 3  —  단계별 보고 방식",
-     "각 구현 단계 완료 후 AI에게 결과 보고받기 → 코드 이해도 유지\n"
-     "\"방금 만든 기능을 3줄로 설명해줘\" → 내용 이해 후 다음 단계 진행  ·  Q&A 즉답 가능"),
-    ("LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
+for i, (badge_color, badge_txt, title, body) in enumerate([
+    (GREEN,  "C  +1",
+     "LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
      "개발 중 배운 AI 사용 인사이트 직접 기록\n"
      "Flutter 실행 환경 / 에이전트 호출법 / ADR 개념 / python-pptx 단위 변환 등"),
-    ("AI Agent 리포트  —  이 발표에서 Claude Code 활용 사례 직접 발표",
+    (RGBColor(0x6A, 0x1B, 0x9A), "D  +2",
+     "AI Agent 리포트  —  Claude Code 활용 사례 발표",
+     "Claude Code(Anthropic, 2024~)로 서브에이전트 제작 · 커스텀 명령어 운영 · 단계별 개발 수행\n"
+     "최근 6개월 이내 지속 업데이트 도구 · 출처: claude.ai/code  (공식 문서)"),
+]):
+    ai_item(s, 0.9 + i * 2.95, 2.7, badge_color, badge_txt, title, body)
+
+
+# ════════════════════════════════════════════════════════════
+# 11. 개발 방식 — AI 워크플로우 (정경우 1/2)
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
+pagenum(s, 11)
+
+for i, (badge_color, badge_txt, title, body) in enumerate([
+    (AMBER,  "A  +1",
+     "pre-presentation-checker 에이전트 직접 제작 + /pc 실사용",
+     ".claude/agents/pre-presentation-checker.md  직접 제작\n"
+     "발표 전 제출 서류 · 가산점 · 앱 상태를 평가 루브릭 기준으로 자동 점검 → 미완료 항목 우선 보고"),
+    (INDIGO, "B  +2",
+     "기법 1  —  단일 md 부트스트랩  (AUTHORING.jeongkyeongwoo.v0.1.0.md)",
+     "Rules · Skills · Commands 전체를 파일 하나로 자동 세팅\n"
+     "새 프로젝트에 이 파일 하나만 주면 AI 운영 체계 즉시 구성"),
+    (INDIGO, "B  +2",
+     "기법 3  —  단계별 보고 방식",
+     "각 구현 단계 완료 후 AI에게 결과 보고받기 → 코드 이해도 유지\n"
+     "\"방금 만든 기능을 3줄로 설명해줘\" → 내용 이해 후 다음 단계 진행  ·  Q&A 즉답 가능"),
+]):
+    ai_item(s, 1.0 + i * 2.0, 1.85, badge_color, badge_txt, title, body)
+
+
+# ════════════════════════════════════════════════════════════
+# 12. 개발 방식 — AI 워크플로우 (정경우 2/2)
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
+pagenum(s, 12)
+
+for i, (badge_color, badge_txt, title, body) in enumerate([
+    (GREEN,  "C  +1",
+     "LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
+     "개발 중 배운 AI 사용 인사이트 직접 기록\n"
+     "Flutter 실행 환경 / 에이전트 호출법 / ADR 개념 / python-pptx 단위 변환 등"),
+    (RGBColor(0x6A, 0x1B, 0x9A), "D  +2",
+     "AI Agent 리포트  —  Claude Code 활용 사례 발표",
      "Claude Code(Anthropic, 2024~)로 서브에이전트 제작 · 커스텀 명령어 운영 · 단계별 보고 방식 수행\n"
      "최근 6개월 이내 지속 업데이트 도구 · 출처: claude.ai/code  (공식 문서)"),
-]
-for i, (title, body) in enumerate(items_b):
-    ty = 1.08 + i * 1.23
-    rect(s, 0.5, ty, 12.3, 1.12, line_color=BORDER)
-    rect(s, 0.5, ty, 12.3, 0.4, fill=LGRAY)
-    txt(s, title, 0.72, ty + 0.05, 12.0, 0.32, size=12, bold=True, color=INDIGO)
-    txt(s, body,  0.72, ty + 0.48, 12.0, 0.58, size=10, color=DARK)
+]):
+    ai_item(s, 0.9 + i * 2.95, 2.7, badge_color, badge_txt, title, body)
 
 
 # ════════════════════════════════════════════════════════════
@@ -399,7 +432,7 @@ for i, (title, body) in enumerate(items_b):
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0001  —  모바일 프레임워크 선택")
-pagenum(s, 11)
+pagenum(s, 13)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -416,7 +449,7 @@ for i, (opt, sel) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0002  —  아키텍처 패턴 선택")
-pagenum(s, 12)
+pagenum(s, 14)
 
 txt(s, "선택지 비교", 0.5, 1.08, 6.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -450,7 +483,7 @@ for i, (a, b, c, hdr) in enumerate(table_rows):
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0003  —  백엔드 서비스 선택")
-pagenum(s, 13)
+pagenum(s, 15)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -474,7 +507,7 @@ txt(s, "감사합니다", 1, 1.6, 11, 1.5,
     size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
 txt(s, "Portfolio Tracker  ·  2026.06",
     1, 5.55, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
-pagenum(s, 14)
+pagenum(s, 16)
 
 
 # ── 저장 ─────────────────────────────────────────────────
