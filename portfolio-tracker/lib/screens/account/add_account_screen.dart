@@ -83,6 +83,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               const Text('계좌 유형', style: TextStyle(fontSize: 14, color: Colors.grey)),
               const SizedBox(height: 8),
               SegmentedButton<String>(
+                showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(value: 'stock', label: Text('주식'), icon: Icon(Icons.bar_chart)),
                   ButtonSegment(value: 'coin', label: Text('코인'), icon: Icon(Icons.currency_bitcoin)),
