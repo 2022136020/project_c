@@ -7,7 +7,11 @@ import '../models/position.dart';
 class FirestoreService {
   final _db = FirebaseFirestore.instance;
 
-  String get _uid => FirebaseAuth.instance.currentUser!.uid;
+  String get _uid {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('로그인이 필요합니다.');
+    return user.uid;
+  }
   CollectionReference get _accounts => _db.collection('users/$_uid/accounts');
   CollectionReference get _positions => _db.collection('users/$_uid/positions');
 

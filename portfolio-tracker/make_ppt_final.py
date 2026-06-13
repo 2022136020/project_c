@@ -20,7 +20,7 @@ GREEN    = RGBColor(0x2E, 0x7D, 0x32)
 AMBER    = RGBColor(0xE6, 0x5C, 0x00)
 
 BLANK = prs.slide_layouts[6]
-TOTAL_SLIDES = 16
+TOTAL_SLIDES = 19
 
 # ── 헬퍼 ──────────────────────────────────────────────────
 def rect(s, l, t, w, h, fill=None, line_color=None, lw=0.8):
@@ -115,11 +115,38 @@ txt(s, '한 줄 가치 제안  ·  "경험을 자산으로 바꾸는 개인 투�
 
 
 # ════════════════════════════════════════════════════════════
-# 3. 사용자 시나리오
+# 3. 활용 방안 & 기대 효과
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "2.  사용자 시나리오", "포지션 기록과 복기 — 핵심 유즈케이스")
+header(s, "2.  활용 방안 & 기대 효과", "이 앱으로 무엇을 할 수 있는가")
 pagenum(s, 3)
+
+use_items = [
+    ("투자 기록 통합 관리",
+     "주식·코인 계좌를 한 앱에서 관리  ·  입출금·잔액·수익률 자동 계산\n"
+     "여러 계좌에 흩어진 투자 현황을 대시보드 한 화면에서 즉시 파악"),
+    ("복기를 통한 실력 향상",
+     "매수 근거 · 목표가 · 손절가를 기록하고, 정리 후 실제 손익과 나란히 비교\n"
+     "패턴 파악 → 반복 실수 방지 → 장기적으로 판단력 향상"),
+    ("지속적인 성과 추적",
+     "수익률 막대 차트 · 누적 손익 라인 차트 · 기간 필터로 성과 시각화\n"
+     "승률·누적 손익 등 핵심 지표를 대시보드에서 상시 모니터링"),
+]
+for i, (title, body) in enumerate(use_items):
+    ty = 1.15 + i * 1.82
+    rect(s, 0.5, ty, 12.3, 1.55, line_color=BORDER)
+    rect(s, 0.5, ty, 0.06, 1.55, fill=GREEN)
+    rect(s, 0.5, ty, 12.3, 0.48, fill=LGRAY)
+    txt(s, title, 0.72, ty + 0.1, 12.0, 0.3, size=13, bold=True, color=INDIGO)
+    txt(s, body,  0.72, ty + 0.56, 11.8, 0.88, size=12, color=DARK)
+
+
+# ════════════════════════════════════════════════════════════
+# 4. 사용자 시나리오
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "3.  사용자 시나리오", "포지션 기록과 복기 — 핵심 유즈케이스")
+pagenum(s, 4)
 
 # 시나리오 텍스트
 rect(s, 0.5, 1.15, 12.3, 1.6, fill=LGRAY, line_color=BORDER)
@@ -168,8 +195,8 @@ txt(s, "보조 시나리오: 월말 복기(손익·승률 확인) / 대시보드
 # 4. 기술 스택과 아키텍처
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "3.  기술 스택과 아키텍처", "주요 기술 결정 — ADR 기반")
-pagenum(s, 4)
+header(s, "4.  기술 스택과 아키텍처", "주요 기술 결정 — ADR 기반")
+pagenum(s, 5)
 
 # 표 헤더
 col_x = [0.5, 4.2, 9.6]
@@ -209,8 +236,8 @@ txt(s, "* ADR 세부 내용(선택지 비교)은 발표 마지막 슬라이드�
 # 5. 아키텍처 다이어그램
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "4.  아키텍처 다이어그램", "4레이어 구조 — 역할 분리로 유지보수 용이")
-pagenum(s, 5)
+header(s, "5.  아키텍처 다이어그램", "4레이어 구조 — 역할 분리로 유지보수 용이")
+pagenum(s, 6)
 
 layers = [
     ("Presentation",  "screens/",   "화면 렌더링 · 사용자 입력 처리",         "Flutter Widget"),
@@ -247,8 +274,8 @@ for i, (layer, loc, desc, tech) in enumerate(layers):
 # 6. 진행 상황
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "5.  진행 상황", "Must 기능 기준 진척도")
-pagenum(s, 6)
+header(s, "6.  진행 상황  (WBS)", "Must 기능 기준 진척도")
+pagenum(s, 7)
 
 rows = [
     ("✅ 완료", "인증",        "회원가입 / 로그인 / 자동 로그인",              GREEN),
@@ -276,8 +303,8 @@ txt(s, "전체 진척  ·  Must 기능 99% 완료  (6단계 완료 / Android APK
 # 7. 데모
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "6.  데모", "라이브 시연 — 핵심 화면 2가지")
-pagenum(s, 7)
+header(s, "7.  데모", "라이브 시연 — 핵심 화면 2가지")
+pagenum(s, 8)
 
 demo_items = [
     ("시나리오 A", "계좌 관리 흐름",
@@ -304,11 +331,69 @@ txt(s, "데모 백업  ·  Wi-Fi 없는 환경 대비 → 로컬 데이터 캐�
 
 
 # ════════════════════════════════════════════════════════════
-# 8. 어려운 점 / 도움 요청
+# 9. 개발 환경 · 빌드 & 배포
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "7.  어려운 점 / 도움 요청")
-pagenum(s, 8)
+header(s, "8.  개발 환경 · 빌드 & 배포", "설치부터 배포까지 — GitHub 가이드 참고")
+pagenum(s, 9)
+
+env_items = [
+    ("개발 환경 구성",
+     "Flutter SDK 3.x  ·  Dart SDK 3.x  ·  VS Code + Flutter/Dart 확장\n"
+     "Firebase CLI 15.x  ·  Android Studio (에뮬레이터·SDK)  ·  Git\n"
+     "설치 가이드: README.md → docs/setup.md 순서대로 진행"),
+    ("빌드",
+     "flutter pub get  →  flutter run  (개발·디버그 빌드)\n"
+     "flutter build apk --release  →  APK 생성  ·  build/app/outputs/apk/release/"),
+    ("배포 & 설치",
+     "Firebase Auth + Firestore: 이미 연동 완료 (firebase_options.dart)\n"
+     "Android APK 직접 설치: USB 케이블 + adb install app-release.apk\n"
+     "Firebase Hosting (web): flutter build web → firebase deploy"),
+]
+for i, (title, body) in enumerate(env_items):
+    ty = 1.15 + i * 1.82
+    rect(s, 0.5, ty, 12.3, 1.55, line_color=BORDER)
+    rect(s, 0.5, ty, 0.06, 1.55, fill=INDIGO)
+    rect(s, 0.5, ty, 12.3, 0.48, fill=LGRAY)
+    txt(s, title, 0.72, ty + 0.1, 12.0, 0.3, size=13, bold=True, color=INDIGO)
+    txt(s, body,  0.72, ty + 0.56, 11.8, 0.88, size=11.5, color=DARK)
+
+
+# ════════════════════════════════════════════════════════════
+# 10. 코드 품질 · 테스트 · 성능 최적화
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "9.  코드 품질 · 테스트 · 성능 최적화")
+pagenum(s, 10)
+
+quality_items = [
+    ("코드 품질 관리",
+     "flutter_lints 적용 — 린트 경고 0건 유지  ·  4레이어 아키텍처로 역할 분리\n"
+     "FirestoreService 단일 책임 원칙 준수  ·  모델·서비스·화면 계층 엄격히 분리"),
+    ("단위 테스트 · 통합 테스트",
+     "docs/testing.md 기반 기능별 수동 체크리스트 작성 및 확인\n"
+     "인증·계좌·포지션·차트·대시보드 5개 영역 E2E 시나리오 직접 수행\n"
+     "Firebase Auth + Firestore 실제 연동 통합 테스트 완료"),
+    ("성능 최적화",
+     "StreamBuilder — Firestore 실시간 구독으로 불필요한 poll 제거\n"
+     "계좌 삭제 시 Batch 처리로 하위 트랜잭션 원자적 삭제 (cascade)\n"
+     "FutureBuilder 캐싱으로 계좌 목록 잔액 계산 중복 호출 최소화"),
+]
+for i, (title, body) in enumerate(quality_items):
+    ty = 1.15 + i * 1.82
+    rect(s, 0.5, ty, 12.3, 1.55, line_color=BORDER)
+    rect(s, 0.5, ty, 0.06, 1.55, fill=AMBER)
+    rect(s, 0.5, ty, 12.3, 0.48, fill=LGRAY)
+    txt(s, title, 0.72, ty + 0.1, 12.0, 0.3, size=13, bold=True, color=INDIGO)
+    txt(s, body,  0.72, ty + 0.56, 11.8, 0.88, size=11.5, color=DARK)
+
+
+# ════════════════════════════════════════════════════════════
+# 11. 어려운 점 / 도움 요청
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "10.  어려운 점 / 도움 요청")
+pagenum(s, 11)
 
 issues = [
     ("iOS 빌드 불가",
@@ -334,8 +419,8 @@ for i, (title, body) in enumerate(issues):
 # 9. 개발 방식 — AI 워크플로우 (주성현 1/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "8.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
-pagenum(s, 9)
+header(s, "11.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
+pagenum(s, 12)
 
 def ai_item(s, ty, bh, badge_color, badge_txt, title, body):
     rect(s, 0.5, ty, 12.3, bh, line_color=BORDER)
@@ -368,7 +453,7 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "8.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
-pagenum(s, 10)
+pagenum(s, 13)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "C  +1",
@@ -388,7 +473,7 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
-pagenum(s, 11)
+pagenum(s, 14)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (AMBER,  "A  +1",
@@ -412,7 +497,7 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
-pagenum(s, 12)
+pagenum(s, 15)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "C  +1",
@@ -432,7 +517,7 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0001  —  모바일 프레임워크 선택")
-pagenum(s, 13)
+pagenum(s, 16)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -449,7 +534,7 @@ for i, (opt, sel) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0002  —  아키텍처 패턴 선택")
-pagenum(s, 14)
+pagenum(s, 17)
 
 txt(s, "선택지 비교", 0.5, 1.08, 6.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -483,7 +568,7 @@ for i, (a, b, c, hdr) in enumerate(table_rows):
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0003  —  백엔드 서비스 선택")
-pagenum(s, 15)
+pagenum(s, 18)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -507,7 +592,7 @@ txt(s, "감사합니다", 1, 1.6, 11, 1.5,
     size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
 txt(s, "Portfolio Tracker  ·  2026.06",
     1, 5.55, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
-pagenum(s, 16)
+pagenum(s, 19)
 
 
 # ── 저장 ─────────────────────────────────────────────────
