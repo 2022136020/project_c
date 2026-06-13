@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/account.dart';
@@ -18,23 +19,25 @@ class FirestoreService {
   CollectionReference _transactions(String accountId) =>
       _db.collection('users/$_uid/accounts/$accountId/transactions');
 
+  static const _timeout = Duration(seconds: 15);
+
   // ── 계좌 ──────────────────────────────────────────────────
   Stream<List<Account>> accountsStream() => _accounts
       .orderBy('createdAt', descending: true)
       .snapshots()
       .map((s) => s.docs.map(Account.fromDoc).toList());
 
-  Future<void> addAccount(Account account) =>
-      _accounts.add(account.toMap());
+  Future<void> addAccount(Account account) async =>
+      await _accounts.add(account.toMap()).timeout(_timeout);
 
   Future<void> deleteAccount(String id) async {
-    final txSnap = await _transactions(id).get();
+    final txSnap = await _transactions(id).get().timeout(_timeout);
     final batch = _db.batch();
     for (final doc in txSnap.docs) {
       batch.delete(doc.reference);
     }
     batch.delete(_accounts.doc(id));
-    await batch.commit();
+    await batch.commit().timeout(_timeout);
   }
 
   // ── 입출금 ────────────────────────────────────────────────
@@ -44,12 +47,11 @@ class FirestoreService {
           .snapshots()
           .map((s) => s.docs.map(AccountTransaction.fromDoc).toList());
 
-  Future<void> addTransaction(
-          String accountId, AccountTransaction tx) =>
-      _transactions(accountId).add(tx.toMap());
+  Future<void> addTransaction(String accountId, AccountTransaction tx) async =>
+      await _transactions(accountId).add(tx.toMap()).timeout(_timeout);
 
   Future<double> calcBalance(String accountId, double initialBalance) async {
-    final snap = await _transactions(accountId).get();
+    final snap = await _transactions(accountId).get().timeout(_timeout);
     final txs = snap.docs.map(AccountTransaction.fromDoc).toList();
     double balance = initialBalance;
     for (final tx in txs) {
@@ -65,20 +67,20 @@ class FirestoreService {
     return q.snapshots().map((s) => s.docs.map(Position.fromDoc).toList());
   }
 
-  Future<void> addPosition(Position position) =>
-      _positions.add(position.toMap());
+  Future<void> addPosition(Position position) async =>
+      await _positions.add(position.toMap()).timeout(_timeout);
 
   Future<void> closePosition(
-      String positionId, double exitPrice, DateTime exitDate) =>
-      _positions.doc(positionId).update({
+      String positionId, double exitPrice, DateTime exitDate) async =>
+      await _positions.doc(positionId).update({
         'exitPrice': exitPrice,
         'exitDate': Timestamp.fromDate(exitDate),
         'status': 'closed',
-      });
+      }).timeout(_timeout);
 
-  Future<void> updateReview(String positionId, String review) =>
-      _positions.doc(positionId).update({'review': review});
+  Future<void> updateReview(String positionId, String review) async =>
+      await _positions.doc(positionId).update({'review': review}).timeout(_timeout);
 
-  Future<void> deletePosition(String id) =>
-      _positions.doc(id).delete();
+  Future<void> deletePosition(String id) async =>
+      await _positions.doc(id).delete().timeout(_timeout);
 }

@@ -40,7 +40,7 @@ class _SignupScreenState extends State<SignupScreen> {
         _emailController.text.trim(),
         _passwordController.text,
       );
-      if (mounted) Navigator.pop(context);
+      // 회원가입 성공 시 main.dart StreamBuilder가 HomeScreen으로 자동 전환
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _authService.getErrorMessage(e));
     } finally {
