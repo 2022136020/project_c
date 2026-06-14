@@ -27,6 +27,11 @@ class FirestoreService {
       .snapshots()
       .map((s) => s.docs.map(Account.fromDoc).toList());
 
+  Future<List<Account>> getAccounts() async {
+    final snap = await _accounts.get().timeout(_timeout);
+    return snap.docs.map(Account.fromDoc).toList();
+  }
+
   Future<void> addAccount(Account account) async =>
       await _accounts.add(account.toMap()).timeout(_timeout);
 
@@ -71,12 +76,107 @@ class FirestoreService {
       await _positions.add(position.toMap()).timeout(_timeout);
 
   Future<void> closePosition(
-      String positionId, double exitPrice, DateTime exitDate) async =>
-      await _positions.doc(positionId).update({
-        'exitPrice': exitPrice,
-        'exitDate': Timestamp.fromDate(exitDate),
-        'status': 'closed',
-      }).timeout(_timeout);
+      String positionId,
+      double exitPrice,
+      DateTime exitDate,
+      String accountId,
+      double soldQty,
+      String symbol,
+  ) async {
+    final batch = _db.batch();
+
+    batch.update(_positions.doc(positionId), {
+      'exitPrice': exitPrice,
+      'exitDate': Timestamp.fromDate(exitDate),
+      'status': 'closed',
+    });
+
+    // 매도 대금(exitPrice × soldQty)을 계좌에 입금 트랜잭션으로 기록
+    batch.set(_transactions(accountId).doc(), {
+      'type': 'deposit',
+      'amount': exitPrice * soldQty,
+      'date': Timestamp.fromDate(exitDate),
+      'note': '$symbol 매도 (${soldQty % 1 == 0 ? soldQty.toInt() : soldQty}주 × ₩${exitPrice.toStringAsFixed(0)})',
+    });
+
+    await batch.commit().timeout(_timeout);
+  }
+
+  // 분할 매도: 수량 차감 + 새 정리 완료 레코드 + 입금
+  Future<void> partialSell({
+    required Position position,
+    required double soldQty,
+    required double exitPrice,
+    required DateTime exitDate,
+  }) async {
+    final batch = _db.batch();
+
+    // 원본 포지션 수량 차감
+    batch.update(_positions.doc(position.id), {
+      'quantity': position.quantity - soldQty,
+    });
+
+    // 매도된 수량으로 새 정리 완료 레코드 생성
+    batch.set(_positions.doc(), {
+      'accountId': position.accountId,
+      'symbol': position.symbol,
+      'assetType': position.assetType,
+      'entryPrice': position.entryPrice,
+      'quantity': soldQty,
+      'entryDate': Timestamp.fromDate(position.entryDate),
+      'entryReason': position.entryReason,
+      if (position.targetPrice != null) 'targetPrice': position.targetPrice,
+      if (position.stopLoss != null) 'stopLoss': position.stopLoss,
+      'exitPrice': exitPrice,
+      'exitDate': Timestamp.fromDate(exitDate),
+      'status': 'closed',
+    });
+
+    // 매도 대금 계좌 입금
+    batch.set(_transactions(position.accountId).doc(), {
+      'type': 'deposit',
+      'amount': exitPrice * soldQty,
+      'date': Timestamp.fromDate(exitDate),
+      'note':
+          '${position.symbol} 분할 매도 (${soldQty % 1 == 0 ? soldQty.toInt() : soldQty}주 × ₩${exitPrice.toStringAsFixed(0)})',
+    });
+
+    await batch.commit().timeout(_timeout);
+  }
+
+  // 추가 매수: 평균단가·수량 업데이트 + 계좌 출금
+  Future<void> addMorePosition({
+    required String positionId,
+    required double currentQty,
+    required double currentEntryPrice,
+    required double addQty,
+    required double addPrice,
+    required String accountId,
+    required DateTime buyDate,
+    required String symbol,
+  }) async {
+    final newQty = currentQty + addQty;
+    final newAvgPrice =
+        (currentEntryPrice * currentQty + addPrice * addQty) / newQty;
+
+    final batch = _db.batch();
+
+    batch.update(_positions.doc(positionId), {
+      'quantity': newQty,
+      'entryPrice': newAvgPrice,
+    });
+
+    // 추가 매수 대금 계좌 출금
+    batch.set(_transactions(accountId).doc(), {
+      'type': 'withdrawal',
+      'amount': addPrice * addQty,
+      'date': Timestamp.fromDate(buyDate),
+      'note':
+          '$symbol 추가 매수 (${addQty % 1 == 0 ? addQty.toInt() : addQty}주 × ₩${addPrice.toStringAsFixed(0)})',
+    });
+
+    await batch.commit().timeout(_timeout);
+  }
 
   Future<void> updateReview(String positionId, String review) async =>
       await _positions.doc(positionId).update({'review': review}).timeout(_timeout);

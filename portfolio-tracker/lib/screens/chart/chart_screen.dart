@@ -119,17 +119,41 @@ class _ReturnRateBarChart extends StatelessWidget {
   final List<Position> positions;
   const _ReturnRateBarChart({required this.positions});
 
+  /// 동일 종목 묶어서 총 수익률 계산 (총 손익 / 총 투자금 × 100)
+  List<MapEntry<String, double>> _grouped() {
+    final map = <String, ({double totalPnl, double totalInvested})>{};
+    for (final p in positions) {
+      if (p.exitPrice == null) continue;
+      final pnl = (p.exitPrice! - p.entryPrice) * p.quantity;
+      final invested = p.entryPrice * p.quantity;
+      final prev = map[p.symbol];
+      map[p.symbol] = (
+        totalPnl: (prev?.totalPnl ?? 0) + pnl,
+        totalInvested: (prev?.totalInvested ?? 0) + invested,
+      );
+    }
+    return map.entries
+        .map((e) => MapEntry(
+            e.key,
+            e.value.totalInvested == 0
+                ? 0.0
+                : e.value.totalPnl / e.value.totalInvested * 100))
+        .toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final grouped = _grouped();
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('포지션별 수익률',
+            const Text('종목별 총 수익률',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            Text('${positions.length}개 포지션',
+            Text('${grouped.length}개 종목',
                 style: const TextStyle(color: Colors.grey, fontSize: 12)),
             const SizedBox(height: 16),
             SizedBox(
@@ -137,17 +161,17 @@ class _ReturnRateBarChart extends StatelessWidget {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: _maxY(),
-                  minY: _minY(),
-                  barGroups: positions.asMap().entries.map((e) {
-                    final rate = e.value.returnRate!;
+                  maxY: _maxY(grouped),
+                  minY: _minY(grouped),
+                  barGroups: grouped.asMap().entries.map((e) {
+                    final rate = e.value.value;
                     return BarChartGroupData(
                       x: e.key,
                       barRods: [
                         BarChartRodData(
                           toY: rate,
                           color: rate >= 0 ? Colors.blue : Colors.red,
-                          width: _barWidth(),
+                          width: _barWidth(grouped.length),
                           borderRadius: rate >= 0
                               ? const BorderRadius.vertical(top: Radius.circular(4))
                               : const BorderRadius.vertical(bottom: Radius.circular(4)),
@@ -171,10 +195,10 @@ class _ReturnRateBarChart extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (v, _) {
                           final idx = v.toInt();
-                          if (idx < 0 || idx >= positions.length) return const SizedBox.shrink();
+                          if (idx < 0 || idx >= grouped.length) return const SizedBox.shrink();
                           return Padding(
                             padding: const EdgeInsets.only(top: 4),
-                            child: Text(positions[idx].symbol,
+                            child: Text(grouped[idx].key,
                                 style: const TextStyle(fontSize: 9),
                                 overflow: TextOverflow.ellipsis),
                           );
@@ -184,14 +208,14 @@ class _ReturnRateBarChart extends StatelessWidget {
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
-                  gridData: FlGridData(drawVerticalLine: false, horizontalInterval: _gridInterval()),
+                  gridData: FlGridData(drawVerticalLine: false, horizontalInterval: _gridInterval(grouped)),
                   borderData: FlBorderData(show: false),
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipItem: (group, _, rod, __) {
-                        final p = positions[group.x];
+                        final entry = grouped[group.x];
                         return BarTooltipItem(
-                          '${p.symbol}\n${rod.toY >= 0 ? '+' : ''}${rod.toY.toStringAsFixed(2)}%',
+                          '${entry.key}\n${rod.toY >= 0 ? '+' : ''}${rod.toY.toStringAsFixed(2)}%',
                           const TextStyle(color: Colors.white, fontSize: 12),
                         );
                       },
@@ -206,26 +230,26 @@ class _ReturnRateBarChart extends StatelessWidget {
     );
   }
 
-  double _maxY() {
-    final max = positions.map((p) => p.returnRate!).reduce((a, b) => a > b ? a : b);
+  double _maxY(List<MapEntry<String, double>> g) {
+    final max = g.map((e) => e.value).reduce((a, b) => a > b ? a : b);
     return (max * 1.3).ceilToDouble().clamp(5.0, double.infinity);
   }
 
-  double _minY() {
-    final min = positions.map((p) => p.returnRate!).reduce((a, b) => a < b ? a : b);
+  double _minY(List<MapEntry<String, double>> g) {
+    final min = g.map((e) => e.value).reduce((a, b) => a < b ? a : b);
     return min < 0 ? (min * 1.3).floorToDouble().clamp(double.negativeInfinity, -5.0) : 0;
   }
 
-  double _gridInterval() {
-    final range = _maxY() - _minY();
+  double _gridInterval(List<MapEntry<String, double>> g) {
+    final range = _maxY(g) - _minY(g);
     if (range <= 20) return 5;
     if (range <= 50) return 10;
     return 20;
   }
 
-  double _barWidth() {
-    if (positions.length <= 5) return 24;
-    if (positions.length <= 10) return 16;
+  double _barWidth(int count) {
+    if (count <= 5) return 24;
+    if (count <= 10) return 16;
     return 10;
   }
 }

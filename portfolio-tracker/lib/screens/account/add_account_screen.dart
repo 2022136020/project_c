@@ -38,9 +38,19 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
+      final name = _nameController.text.trim();
+      final existing = await _service.getAccounts();
+      if (existing.any((a) => a.name == name)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('\'$name\' 계좌가 이미 등록되어 있습니다.')),
+          );
+        }
+        return;
+      }
       await _service.addAccount(Account(
         id: '',
-        name: _nameController.text.trim(),
+        name: name,
         type: _type,
         initialBalance: double.parse(_balanceController.text.replaceAll(',', '')),
         currency: _resolvedCurrency.isEmpty ? 'KRW' : _resolvedCurrency,

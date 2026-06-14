@@ -2,7 +2,12 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-import os
+import os, io
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
 
 prs = Presentation()
 prs.slide_width  = Inches(13.33)
@@ -271,40 +276,11 @@ for i, (layer, loc, desc, tech) in enumerate(layers):
 
 
 # ════════════════════════════════════════════════════════════
-# 6. 진행 상황
+# 6. 데모
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "6.  진행 상황  (WBS)", "Must 기능 기준 진척도")
+header(s, "6.  데모", "라이브 시연 — 핵심 화면 2가지")
 pagenum(s, 7)
-
-rows = [
-    ("✅ 완료", "인증",        "회원가입 / 로그인 / 자동 로그인",              GREEN),
-    ("✅ 완료", "계좌 관리",   "계좌 등록 / 입출금 기록 / 잔액 자동 계산",     GREEN),
-    ("✅ 완료", "포지션 관리", "진입·정리 / 수익률·손익 계산 / 복기 메모",     GREEN),
-    ("✅ 완료", "시각화",      "수익률 막대 차트 / 누적 손익 라인 차트 / 기간 필터",  GREEN),
-    ("✅ 완료", "대시보드",    "총 잔액 / 누적 손익 / 승률 / 최근 포지션 목록",  GREEN),
-    ("✅ 완료", "문서·배포",   "setup·testing 문서 / README 완비",              GREEN),
-    ("⏳ 예정", "앱 빌드",     "Android APK 빌드 및 설치 파일 생성",            GRAY),
-]
-for i, (status, cat, desc, color) in enumerate(rows):
-    ty = 1.15 + i * 0.8
-    rect(s, 0.5, ty, 12.3, 0.68, line_color=BORDER)
-    rect(s, 0.5, ty, 0.06, 0.68, fill=color)
-    txt(s, status, 0.65, ty + 0.16, 1.3, 0.38, size=11, color=color)
-    txt(s, cat,    2.1,  ty + 0.16, 2.3, 0.38, size=12, bold=True, color=DARK)
-    txt(s, desc,   4.5,  ty + 0.16, 8.1, 0.38, size=12, color=DARK)
-
-rect(s, 0.5, 6.85 - 0.72, 12.3, 0.62, fill=LGRAY, line_color=BORDER)
-txt(s, "전체 진척  ·  Must 기능 99% 완료  (6단계 완료 / Android APK 빌드 예정)",
-    0.72, 6.85 - 0.55, 12.0, 0.42, size=13, bold=True, color=INDIGO)
-
-
-# ════════════════════════════════════════════════════════════
-# 7. 데모
-# ════════════════════════════════════════════════════════════
-s = prs.slides.add_slide(BLANK)
-header(s, "7.  데모", "라이브 시연 — 핵심 화면 2가지")
-pagenum(s, 8)
 
 demo_items = [
     ("시나리오 A", "계좌 관리 흐름",
@@ -331,7 +307,70 @@ txt(s, "데모 백업  ·  Wi-Fi 없는 환경 대비 → 로컬 데이터 캐�
 
 
 # ════════════════════════════════════════════════════════════
-# 9. 개발 환경 · 빌드 & 배포
+# 7. 포트폴리오 분석 차트
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "7.  포트폴리오 분석 화면", "종목별 수익률 & 누적 실현 손익 — 앱 차트 기능")
+pagenum(s, 8)
+
+_chart_img = r"C:\project_c\portfolio-tracker\presentation\chart_screenshot.png"
+if os.path.exists(_chart_img):
+    _img_w = Inches(9)
+    _img_x = Inches((13.33 - 9) / 2)
+    s.shapes.add_picture(_chart_img, _img_x, Inches(1.3), width=_img_w)
+else:
+    # 스크린샷 없을 경우 matplotlib 차트 생성
+    plt.rcParams['font.family'] = 'Malgun Gothic'
+    plt.rcParams['axes.unicode_minus'] = False
+    symbols   = ['NVDA', 'TSMC', 'AAPL', '삼성전자', 'BTC', 'ETH', 'KAKAO', 'LG엔솔']
+    rates     = [35.1, 22.7, 15.2, 8.5, -12.3, 5.8, -8.9, 4.2]
+    pnl_accum = [0, 1_820_000, 3_640_000, 4_560_000, 5_220_000,
+                 4_580_000, 4_910_000, 4_490_000, 4_702_000]
+    colors_bar = ['#1565C0' if r >= 0 else '#C62828' for r in rates]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4.2), facecolor='#FAFAFA')
+    fig.subplots_adjust(left=0.06, right=0.97, top=0.88, bottom=0.18, wspace=0.32)
+    bars = ax1.bar(symbols, rates, color=colors_bar, width=0.55, edgecolor='white', linewidth=0.5)
+    ax1.axhline(0, color='#9E9E9E', linewidth=0.8)
+    ax1.set_title('종목별 총 수익률 (%)', fontsize=12, fontweight='bold', color='#212121', pad=8)
+    ax1.set_ylabel('%', fontsize=10, color='#757575')
+    ax1.tick_params(axis='x', labelsize=9, rotation=15)
+    ax1.tick_params(axis='y', labelsize=9)
+    ax1.set_facecolor('#FAFAFA')
+    ax1.spines['top'].set_visible(False); ax1.spines['right'].set_visible(False)
+    ax1.grid(axis='y', color='#E0E0E0', linewidth=0.5)
+    for bar, rate in zip(bars, rates):
+        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + (0.5 if rate >= 0 else -1.8),
+                 f'{rate:+.1f}%', ha='center', va='bottom', fontsize=8, fontweight='bold',
+                 color='#1565C0' if rate >= 0 else '#C62828')
+    x_pts = list(range(len(pnl_accum)))
+    ax2.plot(x_pts, [v/10000 for v in pnl_accum], color='#1565C0', linewidth=2.2,
+             marker='o', markersize=5, markerfacecolor='#1565C0')
+    ax2.fill_between(x_pts, [v/10000 for v in pnl_accum], alpha=0.12, color='#1565C0')
+    ax2.set_title('누적 실현 손익 (만원)', fontsize=12, fontweight='bold', color='#212121', pad=8)
+    ax2.set_ylabel('만원', fontsize=10, color='#757575')
+    ax2.set_xticks(x_pts); ax2.set_xticklabels(['시작'] + symbols, fontsize=8, rotation=15)
+    ax2.tick_params(axis='y', labelsize=9)
+    ax2.set_facecolor('#FAFAFA')
+    ax2.spines['top'].set_visible(False); ax2.spines['right'].set_visible(False)
+    ax2.grid(axis='y', color='#E0E0E0', linewidth=0.5)
+    final = pnl_accum[-1]/10000
+    ax2.annotate(f'+{final:.0f}만원', xy=(len(pnl_accum)-1, final),
+                 xytext=(-30, 12), textcoords='offset points', fontsize=10,
+                 fontweight='bold', color='#1565C0',
+                 arrowprops=dict(arrowstyle='->', color='#1565C0', lw=1.2))
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='#FAFAFA')
+    plt.close(fig); buf.seek(0)
+    s.shapes.add_picture(buf, Inches((13.33 - 9) / 2), Inches(1.3), width=Inches(9))
+
+rect(s, 0.4, 6.55, 12.5, 0.62, fill=LGRAY, line_color=BORDER)
+txt(s, "기간 필터(1주·1달·3달·6달·1년·전체) 적용 시 해당 기간 정리 포지션만 반영  "
+       "·  분할 매도 시 동일 종목 합산 표시",
+    0.6, 6.68, 12.1, 0.4, size=11, color=GRAY)
+
+
+# ════════════════════════════════════════════════════════════
+# 8. 개발 환경 · 빌드 & 배포
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "8.  개발 환경 · 빌드 & 배포", "설치부터 배포까지 — GitHub 가이드 참고")
@@ -432,15 +471,15 @@ def ai_item(s, ty, bh, badge_color, badge_txt, title, body):
     txt(s, body,  0.72, ty + 0.52, 11.8, bh - 0.58, size=10.5, color=DARK)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
-    (AMBER,  "A  +1",
+    (AMBER,  "AI 워크플로우\n활용  +1",
      "feature-debugger 에이전트 직접 제작 + /dg 실사용",
      ".claude/agents/feature-debugger.md  직접 제작\n"
      "앱 기능 6개 영역(인증 · 계좌 · 포지션 · 차트 · 대시보드 · Firebase)을 /dg 명령어 하나로 반복 점검 수행"),
-    (INDIGO, "B  +2",
+    (INDIGO, "본인 기법\n구성  +2",
      "기법 1  —  단일 md 부트스트랩  (AUTHORING.Jooseonghyeon.v0.1.0.md)",
      "Rules · Skills · Commands 전체를 파일 하나로 자동 세팅\n"
      "새 프로젝트에 이 파일 하나만 주면 AI 운영 체계 즉시 구성"),
-    (INDIGO, "B  +2",
+    (INDIGO, "본인 기법\n구성  +2",
      "기법 3  —  단계별 개발 계획 · 진행",
      "개발 전 단계별 계획 수립 → AI 구현 → 직접 점검 · 이해 → 다음 단계 진행\n"
      "AI 의존 개발에서 코드 이해도를 유지하기 위한 개인 워크플로우"),
@@ -456,11 +495,11 @@ header(s, "8.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
 pagenum(s, 13)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
-    (GREEN,  "C  +1",
+    (GREEN,  "LLM Wiki\n암묵지  +1",
      "LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
      "개발 중 배운 AI 사용 인사이트 직접 기록\n"
      "Flutter 실행 환경 / 에이전트 호출법 / ADR 개념 / python-pptx 단위 변환 등"),
-    (RGBColor(0x6A, 0x1B, 0x9A), "D  +2",
+    (RGBColor(0x6A, 0x1B, 0x9A), "AI 리포트\n발표  +2",
      "AI Agent 리포트  —  Claude Code 활용 사례 발표",
      "Claude Code(Anthropic, 2024~)로 서브에이전트 제작 · 커스텀 명령어 운영 · 단계별 개발 수행\n"
      "최근 6개월 이내 지속 업데이트 도구 · 출처: claude.ai/code  (공식 문서)"),
@@ -476,15 +515,15 @@ header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
 pagenum(s, 14)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
-    (AMBER,  "A  +1",
+    (AMBER,  "AI 워크플로우\n활용  +1",
      "pre-presentation-checker 에이전트 직접 제작 + /pc 실사용",
      ".claude/agents/pre-presentation-checker.md  직접 제작\n"
      "발표 전 제출 서류 · 가산점 · 앱 상태를 평가 루브릭 기준으로 자동 점검 → 미완료 항목 우선 보고"),
-    (INDIGO, "B  +2",
+    (INDIGO, "본인 기법\n구성  +2",
      "기법 1  —  단일 md 부트스트랩  (AUTHORING.jeongkyeongwoo.v0.1.0.md)",
      "Rules · Skills · Commands 전체를 파일 하나로 자동 세팅\n"
      "새 프로젝트에 이 파일 하나만 주면 AI 운영 체계 즉시 구성"),
-    (INDIGO, "B  +2",
+    (INDIGO, "본인 기법\n구성  +2",
      "기법 3  —  단계별 보고 방식",
      "각 구현 단계 완료 후 AI에게 결과 보고받기 → 코드 이해도 유지\n"
      "\"방금 만든 기능을 3줄로 설명해줘\" → 내용 이해 후 다음 단계 진행  ·  Q&A 즉답 가능"),
@@ -500,11 +539,11 @@ header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
 pagenum(s, 15)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
-    (GREEN,  "C  +1",
+    (GREEN,  "LLM Wiki\n암묵지  +1",
      "LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
      "개발 중 배운 AI 사용 인사이트 직접 기록\n"
      "Flutter 실행 환경 / 에이전트 호출법 / ADR 개념 / python-pptx 단위 변환 등"),
-    (RGBColor(0x6A, 0x1B, 0x9A), "D  +2",
+    (RGBColor(0x6A, 0x1B, 0x9A), "AI 리포트\n발표  +2",
      "AI Agent 리포트  —  Claude Code 활용 사례 발표",
      "Claude Code(Anthropic, 2024~)로 서브에이전트 제작 · 커스텀 명령어 운영 · 단계별 보고 방식 수행\n"
      "최근 6개월 이내 지속 업데이트 도구 · 출처: claude.ai/code  (공식 문서)"),
@@ -581,7 +620,7 @@ for i, (opt, sel) in enumerate([
 
 
 # ════════════════════════════════════════════════════════════
-# 14. 감사합니다
+# 감사합니다
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 rect(s, 0, 0, 13.33, 7.5, fill=WHITE)

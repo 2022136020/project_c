@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 strokeWidth: 2,
                                 color: colorScheme.primary),
                           )
-                        : const Text('관리자로 로그인',
+                        : const Text('데모 계정으로 로그인',
                             style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 16),

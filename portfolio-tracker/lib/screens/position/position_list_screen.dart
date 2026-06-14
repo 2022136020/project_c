@@ -21,35 +21,47 @@ class PositionListScreen extends StatelessWidget {
         final open = positions.where((p) => p.status == 'open').toList();
         final closed = positions.where((p) => p.status == 'closed').toList();
 
-        return Scaffold(
-          body: positions.isEmpty
-              ? const Center(child: Text('포지션이 없습니다.\n우측 하단 버튼으로 추가하세요.',
-                  textAlign: TextAlign.center))
-              : ListView(
-                  children: [
-                    if (open.isNotEmpty) ...[
-                      const _SectionHeader('보유 중'),
-                      ...open.map((p) => _PositionTile(
-                          position: p, accounts: accounts, service: service)),
-                    ],
-                    if (closed.isNotEmpty) ...[
-                      const _SectionHeader('정리 완료'),
-                      ...closed.map((p) => _PositionTile(
-                          position: p, accounts: accounts, service: service)),
-                    ],
-                  ],
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              title: const Text('매매 기록'),
+              bottom: TabBar(
+                tabs: [
+                  Tab(text: '진입 중 (${open.length})'),
+                  Tab(text: '정리 완료 (${closed.length})'),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              children: [
+                _PositionTab(
+                  positions: open,
+                  accounts: accounts,
+                  service: service,
+                  emptyMessage: '보유 중인 포지션이 없습니다.\n우측 하단 버튼으로 추가하세요.',
                 ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: accounts.isEmpty
-                ? () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('먼저 계좌를 등록해 주세요.')))
-                : () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            AddPositionScreen(accounts: accounts))),
-            icon: const Icon(Icons.add),
-            label: const Text('포지션 추가'),
+                _PositionTab(
+                  positions: closed,
+                  accounts: accounts,
+                  service: service,
+                  emptyMessage: '정리 완료된 포지션이 없습니다.',
+                ),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: accounts.isEmpty
+                  ? () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('먼저 계좌를 등록해 주세요.')))
+                  : () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              AddPositionScreen(accounts: accounts))),
+              icon: const Icon(Icons.add),
+              label: const Text('포지션 추가'),
+            ),
           ),
         );
       },
@@ -57,18 +69,36 @@ class PositionListScreen extends StatelessWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader(this.title);
+class _PositionTab extends StatelessWidget {
+  final List<Position> positions;
+  final List<Account> accounts;
+  final FirestoreService service;
+  final String emptyMessage;
+
+  const _PositionTab({
+    required this.positions,
+    required this.accounts,
+    required this.service,
+    required this.emptyMessage,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(title,
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary)),
+    if (positions.isEmpty) {
+      return Center(
+        child: Text(emptyMessage,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey)),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 80),
+      itemCount: positions.length,
+      itemBuilder: (_, i) => _PositionTile(
+        position: positions[i],
+        accounts: accounts,
+        service: service,
+      ),
     );
   }
 }
@@ -122,7 +152,7 @@ class _PositionTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                isOpen ? '보유 중' : '정리',
+                isOpen ? '보유 중' : '정리 완료',
                 style: TextStyle(
                     fontSize: 11,
                     color: isOpen ? Colors.green : Colors.grey),
@@ -131,7 +161,7 @@ class _PositionTile extends StatelessWidget {
           ],
         ),
         subtitle: Text(
-          '${_accountName()} · 진입가 ₩${_fmt(position.entryPrice)} × ${position.quantity}',
+          '${_accountName()} · 진입가 ₩${_fmt(position.entryPrice)} × ${position.quantity % 1 == 0 ? position.quantity.toInt() : position.quantity}',
           style: const TextStyle(fontSize: 12),
         ),
         trailing: returnRate == null

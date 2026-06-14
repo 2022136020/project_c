@@ -12,21 +12,28 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   late final TextEditingController _reviewController;
+  late final TextEditingController _exitPriceController;
   final _service = FirestoreService();
   bool _isLoading = false;
   bool _isDirty = false;
+  bool _isEditing = false;
+  DateTime? _exitDate;
 
   @override
   void initState() {
     super.initState();
+    _exitDate = widget.position.exitDate;
     _reviewController =
         TextEditingController(text: widget.position.review ?? '');
+    _exitPriceController = TextEditingController(
+        text: widget.position.exitPrice?.toStringAsFixed(0) ?? '');
     _reviewController.addListener(() => setState(() => _isDirty = true));
   }
 
   @override
   void dispose() {
     _reviewController.dispose();
+    _exitPriceController.dispose();
     super.dispose();
   }
 
@@ -51,6 +58,83 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
+  Future<void> _saveEdit() async {
+    final exitPrice =
+        double.tryParse(_exitPriceController.text.replaceAll(',', ''));
+    if (exitPrice == null || exitPrice <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('정리가를 올바르게 입력해 주세요.')));
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      await _service.closePosition(
+        widget.position.id,
+        exitPrice,
+        _exitDate ?? DateTime.now(),
+        widget.position.accountId,
+        widget.position.quantity,
+        widget.position.symbol,
+      );
+      if (mounted) {
+        setState(() => _isEditing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('수정되었습니다.')));
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('오류: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('포지션 삭제'),
+        content: Text(
+            '${widget.position.symbol} 정리 내역을 삭제하시겠습니까?\n계좌 잔액은 별도로 확인해 주세요.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('취소')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child:
+                  const Text('삭제', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    setState(() => _isLoading = true);
+    try {
+      await _service.deletePosition(widget.position.id);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('오류: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _exitDate ?? DateTime.now(),
+      firstDate: widget.position.entryDate,
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) setState(() => _exitDate = picked);
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.position;
@@ -62,7 +146,24 @@ class _ReviewScreenState extends State<ReviewScreen> {
       appBar: AppBar(
         title: Text('${p.symbol} 복기'),
         actions: [
-          if (_isDirty)
+          if (!_isEditing) ...[
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: '수정',
+              onPressed: _isLoading ? null : () => setState(() => _isEditing = true),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              tooltip: '삭제',
+              onPressed: _isLoading ? null : _delete,
+            ),
+          ],
+          if (_isEditing)
+            TextButton(
+              onPressed: _isLoading ? null : _saveEdit,
+              child: const Text('완료'),
+            ),
+          if (_isDirty && !_isEditing)
             TextButton(
               onPressed: _isLoading ? null : _save,
               child: const Text('저장'),
@@ -74,7 +175,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 포지션 요약 카드
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -87,7 +187,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         Text(p.symbol,
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
-                        if (returnRate != null)
+                        if (returnRate != null && !_isEditing)
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
@@ -111,10 +211,41 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     ),
                     const SizedBox(height: 12),
                     _InfoRow('진입가', '₩${_fmt(p.entryPrice)}'),
-                    if (p.exitPrice != null)
-                      _InfoRow('정리가', '₩${_fmt(p.exitPrice!)}'),
-                    _InfoRow('수량', '${p.quantity}'),
-                    if (pnl != null)
+                    if (_isEditing) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _exitPriceController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: '정리가',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: _pickDate,
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: '정리일',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.calendar_today_outlined),
+                            isDense: true,
+                          ),
+                          child: Text(
+                            _exitDate != null
+                                ? '${_exitDate!.year}.${_exitDate!.month.toString().padLeft(2, '0')}.${_exitDate!.day.toString().padLeft(2, '0')}'
+                                : '날짜 선택',
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      if (p.exitPrice != null)
+                        _InfoRow('정리가', '₩${_fmt(p.exitPrice!)}'),
+                    ],
+                    _InfoRow('수량',
+                        '${p.quantity % 1 == 0 ? p.quantity.toInt() : p.quantity}'),
+                    if (pnl != null && !_isEditing)
                       _InfoRow(
                         '실현 손익',
                         '${pnl >= 0 ? '+' : ''}₩${_fmt(pnl)}',
