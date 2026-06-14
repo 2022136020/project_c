@@ -2,7 +2,7 @@ import os
 import win32com.client
 import shutil
 
-PPT_PATH = os.path.abspath("portfolio-tracker.pptx")
+PPT_PATH = os.path.abspath("portfolio-tracker-final.pptx")
 OUT_DIR = os.path.abspath("../../docs")
 IMG_DIR = os.path.join(OUT_DIR, "slides")
 
