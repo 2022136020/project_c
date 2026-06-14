@@ -25,7 +25,7 @@ GREEN    = RGBColor(0x2E, 0x7D, 0x32)
 AMBER    = RGBColor(0xE6, 0x5C, 0x00)
 
 BLANK = prs.slide_layouts[6]
-TOTAL_SLIDES = 19
+TOTAL_SLIDES = 20
 
 # ── 헬퍼 ──────────────────────────────────────────────────
 def rect(s, l, t, w, h, fill=None, line_color=None, lw=0.8):
@@ -147,11 +147,36 @@ for i, (title, body) in enumerate(use_items):
 
 
 # ════════════════════════════════════════════════════════════
-# 4. 사용자 시나리오
+# 4. WBS
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "3.  사용자 시나리오", "포지션 기록과 복기 — 핵심 유즈케이스")
+header(s, "3.  WBS  (Work Breakdown Structure)", "전체 작업 분해 구조 — 주차별 일정 및 완료 현황")
 pagenum(s, 4)
+
+_wbs_img = r"C:\project_c\portfolio-tracker\presentation\wbs.png"
+if os.path.exists(_wbs_img):
+    from PIL import Image as _PILImg
+    with _PILImg.open(_wbs_img) as _wim:
+        _ww, _wh = _wim.size
+    _avail_w = Inches(12.8)
+    _avail_h = Inches(5.9)
+    if _ww / _wh > _avail_w / _avail_h:
+        _img_w = _avail_w
+        _img_h = _avail_w * _wh / _ww
+    else:
+        _img_h = _avail_h
+        _img_w = _avail_h * _ww / _wh
+    _img_x = Inches(0.27) + (_avail_w - _img_w) / 2
+    _img_y = Inches(1.15) + (_avail_h - _img_h) / 2
+    s.shapes.add_picture(_wbs_img, _img_x, _img_y, width=_img_w, height=_img_h)
+
+
+# ════════════════════════════════════════════════════════════
+# 5. 사용자 시나리오
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "4.  사용자 시나리오", "포지션 기록과 복기 — 핵심 유즈케이스")
+pagenum(s, 5)
 
 # 시나리오 텍스트
 rect(s, 0.5, 1.15, 12.3, 1.6, fill=LGRAY, line_color=BORDER)
@@ -200,8 +225,8 @@ txt(s, "보조 시나리오: 월말 복기(손익·승률 확인) / 대시보드
 # 4. 기술 스택과 아키텍처
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "4.  기술 스택과 아키텍처", "주요 기술 결정 — ADR 기반")
-pagenum(s, 5)
+header(s, "5.  기술 스택과 아키텍처", "주요 기술 결정 — ADR 기반")
+pagenum(s, 6)
 
 # 표 헤더
 col_x = [0.5, 4.2, 9.6]
@@ -241,8 +266,8 @@ txt(s, "* ADR 세부 내용(선택지 비교)은 발표 마지막 슬라이드�
 # 5. 아키텍처 다이어그램
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "5.  아키텍처 다이어그램", "4레이어 구조 — 역할 분리로 유지보수 용이")
-pagenum(s, 6)
+header(s, "6.  아키텍처 다이어그램", "4레이어 구조 — 역할 분리로 유지보수 용이")
+pagenum(s, 7)
 
 layers = [
     ("Presentation",  "screens/",   "화면 렌더링 · 사용자 입력 처리",         "Flutter Widget"),
@@ -279,8 +304,8 @@ for i, (layer, loc, desc, tech) in enumerate(layers):
 # 6. 데모
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "6.  데모", "라이브 시연 — 핵심 화면 2가지")
-pagenum(s, 7)
+header(s, "7.  데모", "라이브 시연 — 핵심 화면 2가지")
+pagenum(s, 8)
 
 demo_items = [
     ("시나리오 A", "계좌 관리 흐름",
@@ -310,8 +335,8 @@ txt(s, "데모 백업  ·  Wi-Fi 없는 환경 대비 → 로컬 데이터 캐�
 # 7. 포트폴리오 분석 차트
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "7.  포트폴리오 분석 화면", "종목별 수익률 & 누적 실현 손익 — 앱 차트 기능")
-pagenum(s, 8)
+header(s, "8.  포트폴리오 분석 화면", "종목별 수익률 & 누적 실현 손익 — 앱 차트 기능")
+pagenum(s, 9)
 
 _chart_img = r"C:\project_c\portfolio-tracker\presentation\chart_screenshot.png"
 if os.path.exists(_chart_img):
@@ -386,8 +411,8 @@ txt(s, "기간 필터(1주·1달·3달·6달·1년·전체) 적용 시 해당 �
 # 8. 개발 환경 · 빌드 & 배포
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "8.  개발 환경 · 빌드 & 배포", "설치부터 배포까지 — GitHub 가이드 참고")
-pagenum(s, 9)
+header(s, "9.  개발 환경 · 빌드 & 배포", "설치부터 배포까지 — GitHub 가이드 참고")
+pagenum(s, 10)
 
 env_items = [
     ("개발 환경 구성",
@@ -415,8 +440,8 @@ for i, (title, body) in enumerate(env_items):
 # 10. 코드 품질 · 테스트 · 성능 최적화
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "9.  코드 품질 · 테스트 · 성능 최적화")
-pagenum(s, 10)
+header(s, "10.  코드 품질 · 테스트 · 성능 최적화")
+pagenum(s, 11)
 
 quality_items = [
     ("코드 품질 관리",
@@ -444,8 +469,8 @@ for i, (title, body) in enumerate(quality_items):
 # 11. 어려운 점 / 도움 요청
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "10.  어려운 점 / 도움 요청")
-pagenum(s, 11)
+header(s, "11.  어려운 점 / 도움 요청")
+pagenum(s, 12)
 
 issues = [
     ("iOS 빌드 불가",
@@ -471,8 +496,8 @@ for i, (title, body) in enumerate(issues):
 # 9. 개발 방식 — AI 워크플로우 (주성현 1/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "11.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
-pagenum(s, 12)
+header(s, "12.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
+pagenum(s, 13)
 
 def ai_item(s, ty, bh, badge_color, badge_txt, title, body):
     rect(s, 0.5, ty, 12.3, bh, line_color=BORDER)
@@ -504,8 +529,8 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # 10. 개발 방식 — AI 워크플로우 (주성현 2/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "8.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
-pagenum(s, 13)
+header(s, "13.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
+pagenum(s, 14)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "LLM Wiki\n암묵지  +1",
@@ -524,8 +549,8 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # 11. 개발 방식 — AI 워크플로우 (정경우 1/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
-pagenum(s, 14)
+header(s, "14.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
+pagenum(s, 15)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (AMBER,  "AI 워크플로우\n활용  +1",
@@ -548,8 +573,8 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # 12. 개발 방식 — AI 워크플로우 (정경우 2/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "9.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
-pagenum(s, 15)
+header(s, "15.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
+pagenum(s, 16)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "LLM Wiki\n암묵지  +1",
@@ -569,7 +594,7 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0001  —  모바일 프레임워크 선택")
-pagenum(s, 16)
+pagenum(s, 17)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -586,7 +611,7 @@ for i, (opt, sel) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0002  —  아키텍처 패턴 선택")
-pagenum(s, 17)
+pagenum(s, 18)
 
 txt(s, "선택지 비교", 0.5, 1.08, 6.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -620,7 +645,7 @@ for i, (a, b, c, hdr) in enumerate(table_rows):
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0003  —  백엔드 서비스 선택")
-pagenum(s, 18)
+pagenum(s, 19)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -644,7 +669,7 @@ txt(s, "감사합니다", 1, 1.6, 11, 1.5,
     size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
 txt(s, "Portfolio Tracker  ·  2026.06",
     1, 5.55, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
-pagenum(s, 19)
+pagenum(s, 20)
 
 
 # ── 저장 ─────────────────────────────────────────────────
