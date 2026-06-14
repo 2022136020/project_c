@@ -315,9 +315,22 @@ pagenum(s, 8)
 
 _chart_img = r"C:\project_c\portfolio-tracker\presentation\chart_screenshot.png"
 if os.path.exists(_chart_img):
-    _img_w = Inches(9)
-    _img_x = Inches((13.33 - 9) / 2)
-    s.shapes.add_picture(_chart_img, _img_x, Inches(1.3), width=_img_w)
+    from PIL import Image as _PILImg
+    with _PILImg.open(_chart_img) as _im:
+        _iw, _ih = _im.size
+    # 헤더 아래 가용 영역: y=1.1~7.3 (6.2인치), x=0.4~12.9 (12.5인치)
+    _avail_h = Inches(6.0)
+    _avail_w = Inches(12.0)
+    # 비율 유지하며 가용 영역 안에 맞추기
+    if _iw / _ih > _avail_w / _avail_h:
+        _img_w = _avail_w
+        _img_h = _avail_w * _ih / _iw
+    else:
+        _img_h = _avail_h
+        _img_w = _avail_h * _iw / _ih
+    _img_x = Inches(0.67) + (_avail_w - _img_w) / 2
+    _img_y = Inches(1.25) + (_avail_h - _img_h) / 2
+    s.shapes.add_picture(_chart_img, _img_x, _img_y, width=_img_w, height=_img_h)
 else:
     # 스크린샷 없을 경우 matplotlib 차트 생성
     plt.rcParams['font.family'] = 'Malgun Gothic'
@@ -540,9 +553,9 @@ pagenum(s, 15)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "LLM Wiki\n암묵지  +1",
-     "LLM Wiki  —  암묵지 운영  (notes/llm-wiki.md · 11개 항목)",
+     "LLM Wiki  —  암묵지 운영  (notes/llm-wiki-jeongkyeongwoo.md · 10개 항목)",
      "개발 중 배운 AI 사용 인사이트 직접 기록\n"
-     "Flutter 실행 환경 / 에이전트 호출법 / ADR 개념 / python-pptx 단위 변환 등"),
+     "AI 활용법 / Firebase 실전 경험 / Flutter 주의사항 / 에이전트 특화 운영 등"),
     (RGBColor(0x6A, 0x1B, 0x9A), "AI 리포트\n발표  +2",
      "AI Agent 리포트  —  Claude Code 활용 사례 발표",
      "Claude Code(Anthropic, 2024~)로 서브에이전트 제작 · 커스텀 명령어 운영 · 단계별 보고 방식 수행\n"
