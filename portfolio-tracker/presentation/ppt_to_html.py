@@ -26,10 +26,15 @@ ppt_app.Quit()
 print("변환 완료")
 
 # HTML 생성
+VIDEO_SLIDE = 22  # 시연영상 슬라이드 번호 (1-indexed)
+
 slides_html = ""
 for i in range(1, slide_count + 1):
     display = "block" if i == 1 else "none"
-    slides_html += f'  <img id="slide-{i}" class="slide" src="slides/slide_{i:02d}.png" style="display:{display}">\n'
+    if i == VIDEO_SLIDE:
+        slides_html += f'  <video id="slide-{i}" class="slide video-slide" src="video.mp4" controls style="display:{display}; background:#000;"></video>\n'
+    else:
+        slides_html += f'  <img id="slide-{i}" class="slide" src="slides/slide_{i:02d}.png" style="display:{display}">\n'
 
 html = f"""<!DOCTYPE html>
 <html lang="ko">
@@ -47,6 +52,7 @@ html = f"""<!DOCTYPE html>
     button:disabled {{ opacity: 0.3; cursor: default; }}
     .counter {{ color: #aaa; font-size: 15px; min-width: 80px; text-align: center; }}
     .progress {{ position: fixed; top: 0; left: 0; height: 3px; background: #4a9eff; transition: width 0.2s; }}
+    .video-slide {{ max-width: 90%; max-height: 80vh; display: block; margin: 0 auto; }}
   </style>
 </head>
 <body>
@@ -62,10 +68,16 @@ html = f"""<!DOCTYPE html>
     var current = 1;
     var total = {slide_count};
 
+    var videoSlide = {VIDEO_SLIDE};
+
     function move(dir) {{
-      document.getElementById('slide-' + current).style.display = 'none';
+      var prevEl = document.getElementById('slide-' + current);
+      prevEl.style.display = 'none';
+      if (prevEl.tagName === 'VIDEO') prevEl.pause();
       current += dir;
-      document.getElementById('slide-' + current).style.display = 'block';
+      var el = document.getElementById('slide-' + current);
+      el.style.display = 'block';
+      if (el.tagName === 'VIDEO') el.play();
       document.getElementById('counter').textContent = current + ' / ' + total;
       document.getElementById('prev').disabled = current === 1;
       document.getElementById('next').disabled = current === total;

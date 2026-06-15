@@ -14,6 +14,7 @@
     button:disabled { opacity: 0.3; cursor: default; }
     .counter { color: #aaa; font-size: 15px; min-width: 80px; text-align: center; }
     .progress { position: fixed; top: 0; left: 0; height: 3px; background: #4a9eff; transition: width 0.2s; }
+    .video-slide { max-width: 90%; max-height: 80vh; display: block; margin: 0 auto; }
   </style>
 </head>
 <body>
@@ -39,7 +40,7 @@
   <img id="slide-19" class="slide" src="slides/slide_19.png" style="display:none">
   <img id="slide-20" class="slide" src="slides/slide_20.png" style="display:none">
   <img id="slide-21" class="slide" src="slides/slide_21.png" style="display:none">
-  <img id="slide-22" class="slide" src="slides/slide_22.png" style="display:none">
+  <video id="slide-22" class="slide video-slide" src="video.mp4" controls style="display:none; background:#000;"></video>
   <img id="slide-23" class="slide" src="slides/slide_23.png" style="display:none">
 
   <div class="controls">
@@ -52,10 +53,16 @@
     var current = 1;
     var total = 23;
 
+    var videoSlide = 22;
+
     function move(dir) {
-      document.getElementById('slide-' + current).style.display = 'none';
+      var prevEl = document.getElementById('slide-' + current);
+      prevEl.style.display = 'none';
+      if (prevEl.tagName === 'VIDEO') prevEl.pause();
       current += dir;
-      document.getElementById('slide-' + current).style.display = 'block';
+      var el = document.getElementById('slide-' + current);
+      el.style.display = 'block';
+      if (el.tagName === 'VIDEO') el.play();
       document.getElementById('counter').textContent = current + ' / ' + total;
       document.getElementById('prev').disabled = current === 1;
       document.getElementById('next').disabled = current === total;
