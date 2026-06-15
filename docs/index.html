@@ -38,16 +38,17 @@
   <img id="slide-18" class="slide" src="slides/slide_18.png" style="display:none">
   <img id="slide-19" class="slide" src="slides/slide_19.png" style="display:none">
   <img id="slide-20" class="slide" src="slides/slide_20.png" style="display:none">
+  <img id="slide-21" class="slide" src="slides/slide_21.png" style="display:none">
 
   <div class="controls">
     <button id="prev" onclick="move(-1)" disabled>&#9664; 이전</button>
-    <span class="counter" id="counter">1 / 20</span>
+    <span class="counter" id="counter">1 / 21</span>
     <button id="next" onclick="move(1)">다음 &#9654;</button>
   </div>
 
   <script>
     var current = 1;
-    var total = 20;
+    var total = 21;
 
     function move(dir) {
       document.getElementById('slide-' + current).style.display = 'none';

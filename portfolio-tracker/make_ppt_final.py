@@ -25,7 +25,7 @@ GREEN    = RGBColor(0x2E, 0x7D, 0x32)
 AMBER    = RGBColor(0xE6, 0x5C, 0x00)
 
 BLANK = prs.slide_layouts[6]
-TOTAL_SLIDES = 20
+TOTAL_SLIDES = 21
 
 # ── 헬퍼 ──────────────────────────────────────────────────
 def rect(s, l, t, w, h, fill=None, line_color=None, lw=0.8):
@@ -493,11 +493,42 @@ for i, (title, body) in enumerate(issues):
 # ════════════════════════════════════════════════════════════
 # 9. 개발 방식 — AI 워크플로우 (가산점 A+1 · B+2 · C+1)
 # ════════════════════════════════════════════════════════════
+# 향후 계획 — 실시간 주가 자동 조회 API
+# ════════════════════════════════════════════════════════════
+s = prs.slides.add_slide(BLANK)
+header(s, "12.  향후 계획 — 지속적 기술 습득", "실시간 주가 자동 조회 API 도입 예정")
+pagenum(s, 13)
+
+plan_items = [
+    ("현재 한계",
+     "포지션 등록 시 진입가·현재가를 사용자가 직접 입력해야 함\n"
+     "수동 입력 → 오타·오류 가능성 / 실시간 시세 반영 불가"),
+    ("도입 예정 기술",
+     "Yahoo Finance API (무료) 또는 한국투자증권 Open API 연동\n"
+     "종목명 입력 시 현재가 자동 조회 → 포지션 등록 화면에 자동 채움"),
+    ("학습 계획",
+     "Flutter에서 REST API 비동기 호출 (http 패키지 · async/await 심화)\n"
+     "API 키 보안 관리 (환경변수·flutter_dotenv) · JSON 파싱 처리"),
+]
+for i, (title, body) in enumerate(plan_items):
+    ty = 1.15 + i * 1.82
+    rect(s, 0.5, ty, 12.3, 1.55, line_color=BORDER)
+    rect(s, 0.5, ty, 0.06, 1.55, fill=INDIGO)
+    rect(s, 0.5, ty, 12.3, 0.48, fill=LGRAY)
+    txt(s, title, 0.72, ty + 0.1, 12.0, 0.3, size=13, bold=True, color=INDIGO)
+    txt(s, body,  0.72, ty + 0.56, 11.8, 0.88, size=12, color=DARK)
+
+rect(s, 0.5, 6.65, 12.3, 0.55, fill=RGBColor(0xE8, 0xEA, 0xF6), line_color=BORDER)
+txt(s, "\"외부 API 연동과 보안 관리를 새로 학습해 적용할 예정입니다.\"",
+    0.72, 6.75, 12.0, 0.35, size=12, bold=True, color=INDIGO)
+
+
+# ════════════════════════════════════════════════════════════
 # 9. 개발 방식 — AI 워크플로우 (주성현 1/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "12.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
-pagenum(s, 13)
+header(s, "13.  개발 방식 — AI 워크플로우", "주성현  (1/2)")
+pagenum(s, 14)
 
 def ai_item(s, ty, bh, badge_color, badge_txt, title, body):
     rect(s, 0.5, ty, 12.3, bh, line_color=BORDER)
@@ -529,8 +560,8 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # 10. 개발 방식 — AI 워크플로우 (주성현 2/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "13.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
-pagenum(s, 14)
+header(s, "14.  개발 방식 — AI 워크플로우", "주성현  (2/2)")
+pagenum(s, 15)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "LLM Wiki\n암묵지  +1",
@@ -549,8 +580,8 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # 11. 개발 방식 — AI 워크플로우 (정경우 1/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "14.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
-pagenum(s, 15)
+header(s, "15.  개발 방식 — AI 워크플로우", "정경우  (1/2)")
+pagenum(s, 16)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (AMBER,  "AI 워크플로우\n활용  +1",
@@ -573,8 +604,8 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # 12. 개발 방식 — AI 워크플로우 (정경우 2/2)
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
-header(s, "15.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
-pagenum(s, 16)
+header(s, "16.  개발 방식 — AI 워크플로우", "정경우  (2/2)")
+pagenum(s, 17)
 
 for i, (badge_color, badge_txt, title, body) in enumerate([
     (GREEN,  "LLM Wiki\n암묵지  +1",
@@ -594,7 +625,7 @@ for i, (badge_color, badge_txt, title, body) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0001  —  모바일 프레임워크 선택")
-pagenum(s, 17)
+pagenum(s, 18)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -611,7 +642,7 @@ for i, (opt, sel) in enumerate([
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0002  —  아키텍처 패턴 선택")
-pagenum(s, 18)
+pagenum(s, 19)
 
 txt(s, "선택지 비교", 0.5, 1.08, 6.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -645,7 +676,7 @@ for i, (a, b, c, hdr) in enumerate(table_rows):
 # ════════════════════════════════════════════════════════════
 s = prs.slides.add_slide(BLANK)
 header(s, "ADR-0003  —  백엔드 서비스 선택")
-pagenum(s, 19)
+pagenum(s, 20)
 
 txt(s, "선택지 비교", 0.5, 1.08, 12.0, 0.38, size=12, color=GRAY)
 for i, (opt, sel) in enumerate([
@@ -669,7 +700,7 @@ txt(s, "감사합니다", 1, 1.6, 11, 1.5,
     size=52, bold=True, color=INDIGO, align=PP_ALIGN.CENTER)
 txt(s, "Portfolio Tracker  ·  2026.06",
     1, 5.55, 11, 0.5, size=13, color=GRAY, align=PP_ALIGN.CENTER)
-pagenum(s, 20)
+pagenum(s, 21)
 
 
 # ── 저장 ─────────────────────────────────────────────────
