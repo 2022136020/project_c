@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF 기출문제 퀴즈</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-wrapper">
+
+    <!-- ===================== 1단계: 업로드 화면 ===================== -->
+    <section id="upload-screen" class="screen active">
+      <div class="screen-inner">
+        <header class="app-header">
+          <div class="logo">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+              <rect width="36" height="36" rx="10" fill="#4F46E5"/>
+              <path d="M10 26V10h10l6 6v10H10z" stroke="#fff" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <path d="M20 10v6h6" stroke="#fff" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <line x1="14" y1="19" x2="22" y2="19" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+              <line x1="14" y1="22" x2="22" y2="22" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="logo-text">PDF 퀴즈</span>
+          </div>
+          <button class="theme-toggle" id="theme-toggle" aria-label="다크 모드 전환">
+            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="upload-hero">
+          <h1 class="upload-title">기출문제 PDF를 업로드하세요</h1>
+          <p class="upload-subtitle">Claude AI가 문제를 자동으로 분석하여 퀴즈를 생성합니다</p>
+        </div>
+
+        <!-- 드래그 앤 드롭 영역 -->
+        <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="PDF 파일 드래그 앤 드롭 영역">
+          <div class="drop-zone-content">
+            <svg class="drop-icon" width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" stroke="var(--color-primary)" stroke-width="2" stroke-dasharray="6 3"/>
+              <path d="M32 20v16" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M24 28l8-8 8 8" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="20" y="40" width="24" height="4" rx="2" fill="var(--color-primary)" opacity="0.3"/>
+            </svg>
+            <p class="drop-text-main">PDF 파일을 여기에 드래그하거나</p>
+            <p class="drop-text-sub" id="file-name-display">PDF 최대 10개 선택 가능 (각 50MB 이하)</p>
+            <label class="btn btn-outline" for="file-input">
+              파일 선택
+            </label>
+            <input type="file" id="file-input" accept=".pdf" multiple hidden aria-label="PDF 파일 선택" />
+          </div>
+        </div>
+
+        <div class="upload-actions">
+          <button class="btn btn-primary btn-large" id="upload-btn" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            문제 추출하기
+          </button>
+        </div>
+
+        <!-- 로딩 오버레이 -->
+        <div class="loading-overlay" id="loading-overlay" hidden aria-live="polite">
+          <div class="loading-card">
+            <div class="spinner" aria-hidden="true">
+              <div class="spinner-ring"></div>
+            </div>
+            <p class="loading-title">PDF 분석 중...</p>
+            <p class="loading-sub">Claude AI가 문제를 추출하고 있습니다</p>
+            <div class="loading-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div class="error-banner" id="error-banner" hidden role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="error-text"></span>
+          <button class="error-close" id="error-close" aria-label="오류 메시지 닫기">&times;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 2단계: 퀴즈 화면 ===================== -->
+    <section id="quiz-screen" class="screen" aria-live="polite">
+      <div class="screen-inner">
+        <header class="quiz-header">
+          <button class="btn btn-ghost btn-sm" id="back-to-upload" aria-label="업로드 화면으로 돌아가기">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            처음으로
+          </button>
+          <div class="quiz-meta">
+            <span id="question-counter" class="question-counter">문제 1 / 10</span>
+          </div>
+        </header>
+
+        <!-- 진행 바 -->
+        <div class="progress-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar-container">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- 문제 카드 -->
+        <div class="question-card" id="question-card">
+          <div class="question-badge" id="question-badge">Q1</div>
+          <p class="question-source" id="question-source"></p>
+          <p class="question-text" id="question-text"></p>
+
+          <!-- 객관식 선택지 -->
+          <div class="choices-container" id="choices-container" hidden>
+            <ul class="choices-list" id="choices-list" role="list"></ul>
+          </div>
+
+          <!-- 주관식 입력 -->
+          <div class="short-answer-container" id="short-answer-container" hidden>
+            <label for="short-answer-input" class="sr-only">답 입력</label>
+            <input
+              type="text"
+              id="short-answer-input"
+              class="short-answer-input"
+              placeholder="답을 입력하세요..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+
+          <!-- 참/거짓 버튼 -->
+          <div class="tf-container" id="tf-container" hidden>
+            <button class="tf-btn tf-true" data-value="true" aria-label="참(O)">
+              <span class="tf-symbol">O</span>
+              <span class="tf-label">참</span>
+            </button>
+            <button class="tf-btn tf-false" data-value="false" aria-label="거짓(X)">
+              <span class="tf-symbol">X</span>
+              <span class="tf-label">거짓</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 정답 확인 버튼 -->
+        <div class="quiz-actions">
+          <button class="btn btn-primary btn-large" id="check-btn" disabled>
+            정답 확인
+          </button>
+        </div>
+
+        <!-- 피드백 영역 -->
+        <div class="feedback-area" id="feedback-area" hidden>
+          <div class="feedback-card" id="feedback-card">
+            <div class="feedback-header">
+              <span class="feedback-icon" id="feedback-icon" aria-hidden="true"></span>
+              <span class="feedback-label" id="feedback-label"></span>
+            </div>
+            <p class="feedback-answer" id="feedback-answer"></p>
+            <p class="feedback-explanation" id="feedback-explanation"></p>
+          </div>
+          <button class="btn btn-primary btn-large" id="next-btn">
+            다음 문제
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 3단계: 결과 화면 ===================== -->
+    <section id="result-screen" class="screen" aria-live="polite">
+      <div class="screen-inner">
+        <header class="app-header">
+          <div class="logo">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+              <rect width="36" height="36" rx="10" fill="#4F46E5"/>
+              <path d="M10 26V10h10l6 6v10H10z" stroke="#fff" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <path d="M20 10v6h6" stroke="#fff" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <line x1="14" y1="19" x2="22" y2="19" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+              <line x1="14" y1="22" x2="22" y2="22" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="logo-text">PDF 퀴즈</span>
+          </div>
+        </header>
+
+        <div class="result-hero">
+          <div class="result-score-circle" id="result-circle" aria-label="점수">
+            <svg class="score-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="score-ring-bg" cx="60" cy="60" r="52"/>
+              <circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="52"/>
+            </svg>
+            <div class="score-text">
+              <span class="score-number" id="score-number">0</span>
+              <span class="score-divider">/</span>
+              <span class="score-total" id="score-total">0</span>
+            </div>
+          </div>
+          <p class="score-subtitle">정답</p>
+        </div>
+
+        <div class="result-grade" id="result-grade" aria-live="polite">
+          <p class="grade-message" id="grade-message"></p>
+          <p class="grade-percent" id="grade-percent"></p>
+        </div>
+
+        <!-- 문제별 결과 요약 -->
+        <div class="result-summary" id="result-summary">
+          <h2 class="summary-title">문제별 결과</h2>
+          <ul class="summary-list" id="summary-list" role="list"></ul>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn btn-outline btn-large" id="retry-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.99"/>
+            </svg>
+            다시 풀기
+          </button>
+          <button class="btn btn-primary btn-large" id="new-upload-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            새 PDF 업로드
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.app-wrapper -->
+
+  <script src="js/app.js"></script>
+</body>
+</html>

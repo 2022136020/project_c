@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시험지 재현기</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f7;
+      --card: #fff;
+      --border: #d1d1d6;
+      --accent: #0071e3;
+      --danger: #e3392f;
+      --success: #34c759;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 2.5rem 1rem 4rem;
+    }
+
+    h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: .3rem; letter-spacing: -.3px; }
+    .sub { color: var(--muted); font-size: .92rem; margin-bottom: 2rem; text-align: center; line-height: 1.5; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; box-shadow: 0 2px 18px rgba(0,0,0,.07);
+      padding: 1.6rem; width: 100%; max-width: 820px;
+    }
+
+    /* Drop zone */
+    #drop-zone {
+      border: 2.5px dashed var(--border); border-radius: 12px;
+      padding: 2.4rem 1rem; text-align: center; cursor: pointer;
+      transition: border-color .2s, background .2s; margin-bottom: 1.3rem;
+    }
+    #drop-zone.over { border-color: var(--accent); background: #f0f7ff; }
+    #drop-zone .ico { font-size: 2.8rem; margin-bottom: .5rem; }
+    #drop-zone p { color: var(--muted); font-size: .88rem; margin-top: .3rem; }
+    #drop-zone strong { color: var(--accent); cursor: pointer; }
+    #file-input { display: none; }
+
+    /* Slots */
+    #slots { display: none; grid-template-columns: repeat(5, 1fr); gap: .6rem; margin-bottom: 1.4rem; }
+    #slots.show { display: grid; }
+
+    .slot {
+      border: 2px dashed var(--border); border-radius: 10px;
+      aspect-ratio: 3/4; position: relative; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; color: var(--muted); font-size: .75rem;
+      text-align: center; cursor: pointer; transition: border-color .18s;
+    }
+    .slot.filled { border-style: solid; cursor: default; }
+    .slot.filled img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .slot.filled .overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .18s;
+    }
+    .slot.filled:hover .overlay { opacity: 1; }
+    .overlay button {
+      background: rgba(255,255,255,.92); border: none; border-radius: 7px;
+      padding: .22rem .6rem; font-size: .75rem; cursor: pointer; font-weight: 600;
+    }
+    .slot-num {
+      position: absolute; top: 4px; left: 5px;
+      background: rgba(0,0,0,.6); color: #fff;
+      font-size: .65rem; padding: 1px 5px; border-radius: 4px;
+    }
+    .slot-add { border-color: var(--accent); color: var(--accent); gap: .25rem; }
+    .slot-add:hover { background: #f0f7ff; }
+    .slot-add .plus { font-size: 1.7rem; line-height: 1; }
+
+    /* Button */
+    .btn {
+      display: block; width: 100%; padding: .78rem; border: none; border-radius: 11px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .15s;
+    }
+    .btn:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; margin-bottom: .6rem; }
+    .btn-primary:not(:disabled):hover { background: #006cd1; }
+    .btn-download { background: var(--success); color: #fff; display: none; }
+    .btn-download:hover { background: #28a745; }
+
+    /* Status */
+    #status { text-align: center; font-size: .88rem; color: var(--muted); min-height: 1.3em; margin-top: .9rem; }
+    #status.error { color: var(--danger); }
+    #status.ok { color: var(--success); }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid #ccc; border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* API key */
+    .api-row {
+      display: flex; align-items: center; gap: .5rem;
+      margin-bottom: 1.3rem; padding: .8rem 1rem;
+      background: #f9f9fb; border: 1px solid var(--border); border-radius: 10px;
+    }
+    .api-row label { font-size: .85rem; color: var(--muted); white-space: nowrap; }
+    .api-row input {
+      flex: 1; border: 1px solid var(--border); border-radius: 7px;
+      padding: .38rem .7rem; font-size: .88rem; font-family: monospace;
+      outline: none;
+    }
+    .api-row input:focus { border-color: var(--accent); }
+    .api-row input.saved { border-color: var(--success); background: #f0fff4; }
+    .api-row .save-badge {
+      font-size: .75rem; color: var(--success); white-space: nowrap; display: none;
+    }
+
+    /* Info box */
+    #info-box {
+      display: none; margin-top: 1rem; padding: .8rem 1rem;
+      background: #f0f7ff; border: 1px solid #b8d8ff; border-radius: 10px;
+      font-size: .85rem; color: #1a5fb4; line-height: 1.6;
+    }
+
+    @media (max-width: 540px) {
+      #slots { grid-template-columns: repeat(3, 1fr); }
+      h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>시험지 재현기</h1>
+<p class="sub">
+  시험지 사진을 업로드하면 AI가 인쇄된 원본 내용만 추출해<br>
+  필기·채점 흔적 없는 깨끗한 PDF를 새로 만들어 드립니다.
+</p>
+
+<div class="card">
+
+  <div class="api-row">
+    <label for="api-key-input">API 키</label>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+    <span class="save-badge" id="save-badge">저장됨 ✓</span>
+  </div>
+
+  <div id="drop-zone">
+    <div class="ico">📋</div>
+    <div><strong id="drop-link">파일 선택</strong> 또는 여기에 끌어다 놓기</div>
+    <p>JPG · PNG · WEBP · 최대 5장</p>
+    <input type="file" id="file-input" accept="image/*" multiple>
+  </div>
+
+  <div id="slots"></div>
+
+  <button class="btn btn-primary" id="btn-process" disabled>시험지 재현 시작</button>
+  <button class="btn btn-download" id="btn-download">📄 PDF 다운로드</button>
+
+  <div id="status"></div>
+  <div id="info-box"></div>
+
+</div>
+
+<script>
+  const MAX = 5;
+  const dropZone   = document.getElementById('drop-zone');
+  const fileInput  = document.getElementById('file-input');
+  const slotsEl    = document.getElementById('slots');
+  const btnProcess = document.getElementById('btn-process');
+  const btnDownload= document.getElementById('btn-download');
+  const statusEl   = document.getElementById('status');
+  const infoBox    = document.getElementById('info-box');
+  const apiKeyInput= document.getElementById('api-key-input');
+  const saveBadge  = document.getElementById('save-badge');
+
+  // Restore saved API key
+  const savedKey = localStorage.getItem('anthropic_api_key') || '';
+  if (savedKey) {
+    apiKeyInput.value = savedKey;
+    apiKeyInput.classList.add('saved');
+    saveBadge.style.display = 'inline';
+  }
+  apiKeyInput.addEventListener('input', () => {
+    const v = apiKeyInput.value.trim();
+    localStorage.setItem('anthropic_api_key', v);
+    const ok = v.startsWith('sk-');
+    apiKeyInput.classList.toggle('saved', ok);
+    saveBadge.style.display = ok ? 'inline' : 'none';
+  });
+
+  let files = [];
+  let thumbUrls = [];
+  let downloadId = null;
+
+  document.getElementById('drop-link').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
+
+  ['dragenter','dragover'].forEach(e =>
+    dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('over'); }));
+  ['dragleave','drop'].forEach(e =>
+    dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('over'); }));
+  dropZone.addEventListener('drop', ev => addFiles([...ev.dataTransfer.files]));
+
+  function addFiles(newFiles) {
+    const imgs = newFiles.filter(f => f.type.startsWith('image/'));
+    const merged = [...files, ...imgs].slice(0, MAX);
+    if (merged.length === files.length && imgs.length > 0) {
+      setStatus(`최대 ${MAX}장까지만 업로드할 수 있습니다.`, 'error'); return;
+    }
+    files = merged;
+    renderSlots();
+    reset();
+  }
+
+  function removeFile(i) {
+    files.splice(i, 1);
+    thumbUrls.splice(i, 1);
+    renderSlots();
+    reset();
+  }
+
+  function renderSlots() {
+    slotsEl.innerHTML = '';
+    if (!files.length) {
+      slotsEl.classList.remove('show');
+      dropZone.style.display = '';
+      btnProcess.disabled = true;
+      return;
+    }
+    slotsEl.classList.add('show');
+    dropZone.style.display = 'none';
+
+    files.forEach((f, i) => {
+      const slot = document.createElement('div');
+      slot.className = 'slot filled';
+
+      const img = document.createElement('img');
+      if (thumbUrls[i]) {
+        img.src = thumbUrls[i];
+      } else {
+        const r = new FileReader();
+        r.onload = e => { img.src = e.target.result; thumbUrls[i] = e.target.result; };
+        r.readAsDataURL(f);
+      }
+
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      const del = document.createElement('button');
+      del.textContent = '삭제';
+      del.onclick = () => removeFile(i);
+      overlay.appendChild(del);
+
+      const num = document.createElement('span');
+      num.className = 'slot-num';
+      num.textContent = `${i + 1}p`;
+
+      slot.appendChild(img);
+      slot.appendChild(overlay);
+      slot.appendChild(num);
+      slotsEl.appendChild(slot);
+    });
+
+    if (files.length < MAX) {
+      const add = document.createElement('div');
+      add.className = 'slot slot-add';
+      add.innerHTML = '<span class="plus">+</span><span>추가</span>';
+      add.onclick = () => fileInput.click();
+      slotsEl.appendChild(add);
+    }
+
+    btnProcess.disabled = false;
+  }
+
+  function reset() {
+    downloadId = null;
+    btnDownload.style.display = 'none';
+    setStatus('');
+    infoBox.style.display = 'none';
+  }
+
+  function setStatus(msg, type = '') {
+    statusEl.innerHTML = msg;
+    statusEl.className = type;
+  }
+
+  btnProcess.addEventListener('click', async () => {
+    if (!files.length) return;
+
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) { setStatus('API 키를 입력해 주세요.', 'error'); return; }
+
+    btnProcess.disabled = true;
+    btnDownload.style.display = 'none';
+    infoBox.style.display = 'none';
+    setStatus(`<span class="spinner"></span>AI가 시험지를 분석하고 있습니다… (장당 약 10~20초)`);
+
+    const form = new FormData();
+    form.append('api_key', apiKey);
+    files.forEach(f => form.append('images[]', f));
+
+    try {
+      const res = await fetch('/process', { method: 'POST', body: form });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus(data.error || '서버 오류', 'error');
+        return;
+      }
+
+      downloadId = data.download_id;
+      btnDownload.style.display = 'block';
+      setStatus(`✅ ${data.pages}장 재현 완료`, 'ok');
+      infoBox.style.display = 'block';
+      infoBox.textContent =
+        `AI가 인쇄된 문제·보기·지시사항만 추출해 PDF를 새로 작성했습니다.\n` +
+        `학생 필기, 채점 기호, 점수는 모두 제외되었습니다.`;
+
+    } catch (err) {
+      setStatus('네트워크 오류: ' + err.message, 'error');
+    } finally {
+      btnProcess.disabled = false;
+    }
+  });
+
+  btnDownload.addEventListener('click', () => {
+    if (downloadId) window.location.href = `/download/${downloadId}`;
+  });
+</script>
+</body>
+</html>

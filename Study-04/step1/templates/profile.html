@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 프로필</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green:#2ecc71; --green-d:#27ae60; --blue:#3498db;
+    --red:#e74c3c;   --orange:#f39c12; --gray:#f5f6fa;
+    --border:#dfe6e9; --text:#2d3436;  --muted:#636e72;
+    --radius:12px;    --shadow:0 4px 20px rgba(0,0,0,.08);
+  }
+  body { font-family:'Segoe UI','Apple SD Gothic Neo',sans-serif;
+         background:var(--gray); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+
+  header { background:#fff; border-bottom:1px solid var(--border); padding:16px 24px;
+           display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); }
+  header .logo { font-size:1.5rem; }
+  header h1 { font-size:1.1rem; font-weight:700; }
+  header p  { font-size:.8rem; color:var(--muted); margin-top:2px; }
+
+  main { flex:1; max-width:860px; width:100%; margin:40px auto; padding:0 20px 80px; }
+
+  /* 탭 */
+  .tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:28px; }
+  .tab-btn {
+    padding:10px 22px; border:none; background:none; font-size:.92rem;
+    font-weight:600; color:var(--muted); cursor:pointer;
+    border-bottom:2px solid transparent; margin-bottom:-2px;
+    transition:color .15s, border-color .15s;
+  }
+  .tab-btn.active { color:var(--green); border-color:var(--green); }
+  .tab-btn:hover  { color:var(--text); }
+  .tab-content    { display:none; }
+  .tab-content.active { display:block; }
+
+  /* 카드 */
+  .card { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:28px 32px; }
+  .card + .card { margin-top:20px; }
+  .card h3 { font-size:1rem; font-weight:700; margin-bottom:18px; }
+
+  /* 폼 */
+  .form-group { margin-bottom:18px; }
+  .form-group label { display:block; font-size:.82rem; font-weight:700; color:var(--muted);
+                      text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px; }
+  .form-group input, .form-group select {
+    width:100%; padding:9px 12px; border:1.5px solid var(--border);
+    border-radius:8px; font-size:.9rem; background:#fff;
+  }
+  .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--green); }
+  .check-group { display:flex; flex-wrap:wrap; gap:8px; }
+  .check-pill input { display:none; }
+  .check-pill label {
+    padding:5px 14px; border:1.5px solid var(--border); border-radius:20px;
+    font-size:.85rem; cursor:pointer; transition:.15s;
+  }
+  .check-pill input:checked + label { background:var(--green); color:#fff; border-color:var(--green); }
+
+  /* 태그 입력 */
+  .tag-input-wrap { border:1.5px solid var(--border); border-radius:8px;
+                    padding:6px 10px; display:flex; flex-wrap:wrap; gap:6px;
+                    background:#fff; cursor:text; }
+  .tag-input-wrap:focus-within { border-color:var(--green); }
+  .tag-chip { background:#e8f8ef; color:var(--green-d); border:1px solid #a9dfbf;
+              border-radius:14px; padding:3px 10px; font-size:.82rem;
+              display:flex; align-items:center; gap:4px; }
+  .tag-chip button { background:none; border:none; cursor:pointer; color:var(--muted); line-height:1; }
+  .tag-chip button:hover { color:var(--red); }
+  .tag-input { border:none; outline:none; font-size:.88rem; min-width:120px; flex:1; }
+
+  /* 버튼 */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:10px 22px;
+         border-radius:8px; border:none; font-size:.9rem; font-weight:600;
+         cursor:pointer; transition:.15s; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .btn-green  { background:var(--green); color:#fff; }
+  .btn-green:hover:not(:disabled) { background:var(--green-d); }
+  .btn-blue   { background:var(--blue);  color:#fff; }
+  .btn-outline { background:#fff; border:1.5px solid var(--border); color:var(--text); }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .btn-red    { background:var(--red); color:#fff; }
+  .btn-red:hover { opacity:.88; }
+
+  /* 레시피 그리드 */
+  .recipe-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .rc { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius);
+        padding:16px; cursor:pointer; transition:.15s; }
+  .rc:hover { box-shadow:var(--shadow); transform:translateY(-2px); }
+  .rc.expanded { cursor:default; transform:none; }
+  .rc-title { font-weight:700; font-size:.97rem; margin-bottom:6px; }
+  .rc-meta  { font-size:.78rem; color:var(--muted); margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .badge { font-size:.7rem; font-weight:600; padding:2px 8px; border-radius:12px; border:1px solid transparent; }
+  .badge-easy   { background:#eafaf1; color:#1e8449; border-color:#a9dfbf; }
+  .badge-medium { background:#fef9e7; color:#9a7d0a; border-color:#f9e79f; }
+  .badge-hard   { background:#fdedec; color:#922b21; border-color:#f5b7b1; }
+
+  .rc-detail { display:none; padding-top:14px; border-top:1px solid var(--border); margin-top:12px; }
+  .expanded .rc-detail { display:block; }
+
+  .rc-steps { list-style:none; counter-reset:s; }
+  .rc-steps li { counter-increment:s; display:flex; gap:10px; padding:7px 0;
+                 border-bottom:1px solid var(--border); font-size:.88rem; line-height:1.5; }
+  .rc-steps li:last-child { border:none; }
+  .rc-steps li::before { content:counter(s); min-width:22px; height:22px;
+                         background:var(--green); color:#fff; border-radius:50%;
+                         display:flex; align-items:center; justify-content:center;
+                         font-size:.72rem; font-weight:700; flex-shrink:0; }
+
+  /* 평점 */
+  .stars { display:flex; gap:3px; }
+  .star { font-size:1.3rem; cursor:pointer; transition:.1s; filter:grayscale(1); opacity:.4; }
+  .star.on { filter:none; opacity:1; }
+
+  /* 메모 */
+  .memo-box { width:100%; min-height:70px; padding:8px 10px;
+              border:1.5px solid var(--border); border-radius:8px;
+              font-size:.88rem; resize:vertical; font-family:inherit; }
+  .memo-box:focus { outline:none; border-color:var(--green); }
+
+  /* 검색 */
+  .search-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+  .search-input { flex:1; min-width:160px; padding:9px 12px;
+                  border:1.5px solid var(--border); border-radius:8px; font-size:.9rem; }
+  .search-input:focus { outline:none; border-color:var(--green); }
+
+  /* 이력 */
+  .history-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  .history-card { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius);
+                  overflow:hidden; }
+  .history-thumb { width:100%; height:110px; object-fit:cover; background:#f0f0f0;
+                   display:flex; align-items:center; justify-content:center;
+                   font-size:2rem; }
+  .history-thumb img { width:100%; height:100%; object-fit:cover; }
+  .history-body { padding:10px 12px; }
+  .history-ings { font-size:.78rem; color:var(--muted); margin-bottom:10px; line-height:1.4; }
+  .history-date { font-size:.72rem; color:#b2bec3; margin-bottom:8px; }
+  .history-actions { display:flex; gap:6px; }
+
+  /* 위험 영역 */
+  .danger-zone { border:1.5px solid #ffd0d0; border-radius:var(--radius); padding:20px 24px;
+                 background:#fff5f5; }
+  .danger-zone h4 { color:var(--red); font-size:.95rem; margin-bottom:8px; }
+  .danger-zone p  { font-size:.85rem; color:var(--muted); margin-bottom:14px; }
+
+  /* 토스트 */
+  #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+           background:#2d3436; color:#fff; padding:10px 22px; border-radius:8px;
+           font-size:.88rem; z-index:2000; transition:transform .3s; pointer-events:none; }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* 비로그인 안내 */
+  .login-prompt { text-align:center; padding:60px 20px; color:var(--muted); }
+  .login-prompt .lp-icon { font-size:3rem; margin-bottom:16px; }
+  .login-prompt p { margin-bottom:20px; }
+
+  /* 내보내기 */
+  .export-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+
+  /* 정렬 */
+  .sort-row { display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  .sort-row label { font-size:.82rem; color:var(--muted); }
+  .sort-row select { padding:6px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:.85rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">👤</div>
+  <div>
+    <h1>내 프로필</h1>
+    <p>Step 3 — 레시피 저장 &amp; 계정 관리</p>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+    <a href="/" style="color:var(--blue);font-size:.85rem;text-decoration:none">🧊 재료 인식</a>
+    <a href="/recipe" style="color:var(--blue);font-size:.85rem;text-decoration:none">🍳 레시피 생성</a>
+    <div id="auth-nav"></div>
+  </div>
+</header>
+<script src="/static/auth.js"></script>
+
+<main>
+  <!-- 비로그인 -->
+  <div id="login-prompt" class="card login-prompt" style="display:none">
+    <div class="lp-icon">🔒</div>
+    <p>로그인 후 레시피를 저장하고 프로필을 관리할 수 있습니다.</p>
+    <button class="btn btn-green" onclick="Auth.showModal('login')">로그인 / 회원가입</button>
+  </div>
+
+  <!-- 로그인 -->
+  <div id="profile-content" style="display:none">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('settings')">⚙️ 프로필 설정</button>
+      <button class="tab-btn"        onclick="switchTab('recipes')">🔖 저장된 레시피</button>
+      <button class="tab-btn"        onclick="switchTab('history')">🕐 분석 이력</button>
+    </div>
+
+    <!-- ── 탭 1: 프로필 설정 ── -->
+    <div id="tab-settings" class="tab-content active">
+      <div class="card">
+        <h3>기본 정보</h3>
+        <div class="form-group">
+          <label>닉네임</label>
+          <input type="text" id="pf-nickname" placeholder="닉네임 (최대 20자)" maxlength="20">
+        </div>
+        <div class="form-group">
+          <label>기본 인원수 <span id="pf-servings-val" style="font-weight:400;color:var(--text)">2명</span></label>
+          <input type="range" id="pf-servings" min="1" max="6" value="2"
+                 oninput="document.getElementById('pf-servings-val').textContent=this.value+'명'">
+        </div>
+        <div class="form-group">
+          <label>조리 숙련도</label>
+          <select id="pf-skill">
+            <option value="초보">초보</option>
+            <option value="중급" selected>중급</option>
+            <option value="고급">고급</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>식이 제한</h3>
+        <div class="check-group" id="pf-dietary">
+          <label class="check-pill"><input type="checkbox" value="vegetarian"><label>채식</label></label>
+          <label class="check-pill"><input type="checkbox" value="gluten-free"><label>글루텐프리</label></label>
+          <label class="check-pill"><input type="checkbox" value="dairy-free"><label>유제품 제외</label></label>
+          <label class="check-pill"><input type="checkbox" value="nut-free"><label>견과류 제외</label></label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>선호 카테고리</h3>
+        <div class="check-group" id="pf-categories">
+          <label class="check-pill"><input type="checkbox" value="한식"><label>한식</label></label>
+          <label class="check-pill"><input type="checkbox" value="중식"><label>중식</label></label>
+          <label class="check-pill"><input type="checkbox" value="양식"><label>양식</label></label>
+          <label class="check-pill"><input type="checkbox" value="일식"><label>일식</label></label>
+          <label class="check-pill"><input type="checkbox" value="기타"><label>기타</label></label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>알레르기 재료</h3>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">입력 후 Enter — 레시피 생성 시 자동 제외됩니다.</p>
+        <div class="tag-input-wrap" id="allergy-wrap" onclick="document.getElementById('allergy-input').focus()">
+          <input type="text" class="tag-input" id="allergy-input" placeholder="예: 땅콩">
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:10px">
+        <button class="btn btn-green" onclick="saveProfile()">💾 프로필 저장</button>
+      </div>
+    </div>
+
+    <!-- ── 탭 2: 저장된 레시피 ── -->
+    <div id="tab-recipes" class="tab-content">
+      <div class="search-row">
+        <input class="search-input" type="text" id="recipe-search"
+               placeholder="레시피 제목 또는 재료 검색..." oninput="searchDebounce()">
+        <div class="sort-row">
+          <label>정렬</label>
+          <select id="recipe-sort" onchange="loadRecipes()">
+            <option value="created_at">최신순</option>
+            <option value="rating">평점순</option>
+            <option value="title">가나다순</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="export-row" style="margin-bottom:16px">
+        <button class="btn btn-outline" onclick="exportRecipes()">📥 JSON 내보내기</button>
+        <span id="recipe-count" style="color:var(--muted);font-size:.85rem;align-self:center"></span>
+      </div>
+
+      <div id="recipes-container"></div>
+      <div id="recipes-more" style="text-align:center;margin-top:20px;display:none">
+        <button class="btn btn-outline" onclick="loadMore()">더 보기</button>
+      </div>
+    </div>
+
+    <!-- ── 탭 3: 분석 이력 ── -->
+    <div id="tab-history" class="tab-content">
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">
+        최근 냉장고 이미지 분석 이력입니다. 재료 목록을 클릭하면 레시피 생성으로 이동합니다.
+      </p>
+      <div class="history-grid" id="history-container"></div>
+      <p id="history-empty" style="color:var(--muted);text-align:center;padding:40px;display:none">
+        분석 이력이 없습니다.
+      </p>
+    </div>
+
+    <!-- ── 계정 위험 영역 ── -->
+    <div class="card" style="margin-top:32px">
+      <div class="danger-zone">
+        <h4>⚠️ 계정 삭제</h4>
+        <p>계정을 삭제하면 모든 레시피, 프로필, 이력 데이터가 즉시 영구 삭제됩니다.</p>
+        <button class="btn btn-red" onclick="deleteAccount()">계정 삭제</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ── 탭 ────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    const names = ['settings','recipes','history'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'recipes') loadRecipes();
+  if (name === 'history') loadHistory();
+}
+
+// ── 토스트 ────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── 초기화 ────────────────────────────────────────────────
+async function init() {
+  if (!Auth.isLoggedIn()) {
+    document.getElementById('login-prompt').style.display  = '';
+    document.getElementById('profile-content').style.display = 'none';
+    return;
+  }
+  document.getElementById('login-prompt').style.display  = 'none';
+  document.getElementById('profile-content').style.display = '';
+  await loadProfileData();
+  setupAllergyInput();
+}
+
+// ── 프로필 로드 ───────────────────────────────────────────
+let _allergies = [];
+
+async function loadProfileData() {
+  const res  = await Auth.apiFetch('/api/profile');
+  if (!res.ok) return;
+  const data = await res.json();
+
+  document.getElementById('pf-nickname').value = data.nickname || '';
+  document.getElementById('pf-servings').value = data.default_servings || 2;
+  document.getElementById('pf-servings-val').textContent = (data.default_servings || 2) + '명';
+  document.getElementById('pf-skill').value = data.skill_level || '중급';
+
+  // 체크박스 - 식이 제한
+  document.querySelectorAll('#pf-dietary input[type=checkbox]').forEach(cb => {
+    cb.checked = (data.dietary || []).includes(cb.value);
+  });
+  // 체크박스 - 선호 카테고리
+  document.querySelectorAll('#pf-categories input[type=checkbox]').forEach(cb => {
+    cb.checked = (data.preferred_categories || []).includes(cb.value);
+  });
+
+  // 알레르기 태그
+  _allergies = data.allergies || [];
+  renderAllergyTags();
+}
+
+// ── 알레르기 태그 입력 ────────────────────────────────────
+function setupAllergyInput() {
+  const input = document.getElementById('allergy-input');
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = input.value.trim();
+      if (val && !_allergies.includes(val)) {
+        _allergies.push(val);
+        renderAllergyTags();
+      }
+      input.value = '';
+    }
+    if (e.key === 'Backspace' && !input.value && _allergies.length) {
+      _allergies.pop();
+      renderAllergyTags();
+    }
+  });
+}
+
+function renderAllergyTags() {
+  const wrap = document.getElementById('allergy-wrap');
+  const input = document.getElementById('allergy-input');
+  wrap.querySelectorAll('.tag-chip').forEach(e => e.remove());
+  _allergies.forEach(a => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${a} <button onclick="removeAllergy('${a}')">✕</button>`;
+    wrap.insertBefore(chip, input);
+  });
+}
+
+function removeAllergy(val) {
+  _allergies = _allergies.filter(a => a !== val);
+  renderAllergyTags();
+}
+
+// ── 프로필 저장 ───────────────────────────────────────────
+async function saveProfile() {
+  const dietary = [...document.querySelectorAll('#pf-dietary input:checked')].map(c => c.value);
+  const cats    = [...document.querySelectorAll('#pf-categories input:checked')].map(c => c.value);
+  const body    = {
+    nickname:              document.getElementById('pf-nickname').value.trim(),
+    default_servings:      parseInt(document.getElementById('pf-servings').value),
+    skill_level:           document.getElementById('pf-skill').value,
+    dietary,
+    preferred_categories:  cats,
+    allergies:             _allergies,
+  };
+  const res = await Auth.apiFetch('/api/profile', { method:'PUT', body: JSON.stringify(body) });
+  if (res.ok) {
+    const d = await res.json();
+    Auth.getUser && localStorage.setItem('auth_user',
+      JSON.stringify({ ...Auth.getUser(), nickname: d.nickname }));
+    Auth.updateNav();
+    toast('프로필이 저장되었습니다.');
+  } else {
+    toast('저장 실패');
+  }
+}
+
+// ── 레시피 목록 ───────────────────────────────────────────
+let _page = 1, _totalRecipes = 0, _searchTimer;
+
+function searchDebounce() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => loadRecipes(), 400);
+}
+
+async function loadRecipes(reset = true) {
+  if (reset) _page = 1;
+  const q    = document.getElementById('recipe-search').value.trim();
+  const sort = document.getElementById('recipe-sort').value;
+  const url  = `/api/recipes?q=${encodeURIComponent(q)}&sort=${sort}&page=${_page}`;
+  const res  = await Auth.apiFetch(url);
+  if (!res.ok) return;
+  const data = await res.json();
+
+  _totalRecipes = data.total;
+  document.getElementById('recipe-count').textContent = `총 ${data.total}개`;
+  document.getElementById('recipes-more').style.display =
+    data.total > _page * 20 ? '' : 'none';
+
+  const container = document.getElementById('recipes-container');
+  if (reset) container.innerHTML = '';
+
+  if (!data.recipes.length && reset) {
+    container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">저장된 레시피가 없습니다.</p>';
+    return;
+  }
+
+  const grid = container.querySelector('.recipe-grid') || (() => {
+    const g = document.createElement('div');
+    g.className = 'recipe-grid';
+    container.appendChild(g);
+    return g;
+  })();
+
+  data.recipes.forEach(r => grid.appendChild(buildRecipeCard(r)));
+}
+
+async function loadMore() {
+  _page++;
+  await loadRecipes(false);
+}
+
+function buildRecipeCard(r) {
+  const content  = r.content || {};
+  const diffMap  = { '쉬움':'badge-easy', '보통':'badge-medium', '어려움':'badge-hard' };
+  const diffClass = diffMap[content.difficulty || '보통'] || 'badge-medium';
+  const dateStr  = new Date(r.created_at).toLocaleDateString('ko-KR');
+  const stepsHtml = (content.steps || []).map(s =>
+    `<li>${s.replace(/^\d+\.\s*/,'')}</li>`).join('');
+
+  const card = document.createElement('div');
+  card.className = 'rc';
+  card.dataset.id = r.id;
+  card.innerHTML = `
+    <div class="rc-title">${r.title}</div>
+    <div class="rc-meta">
+      <span class="badge ${diffClass}">${content.difficulty || ''}</span>
+      <span>⏱ ${content.cook_time || '?'}분</span>
+      <span>👥 ${content.servings || '?'}인분</span>
+      <span style="margin-left:auto;font-size:.7rem;color:#b2bec3">${dateStr}</span>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:8px">
+      ${renderStars(r.id, r.rating || 0)}
+    </div>
+    <button style="font-size:.8rem;color:var(--blue);background:none;border:none;cursor:pointer;padding:0"
+            onclick="toggleRc(this)">상세 보기 ▼</button>
+
+    <div class="rc-detail">
+      <div style="margin-bottom:12px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px">조리 방법</div>
+        <ol class="rc-steps">${stepsHtml}</ol>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:6px">개인 메모</div>
+        <textarea class="memo-box" id="memo-${r.id}" placeholder="메모를 입력하세요...">${r.memo || ''}</textarea>
+        <button class="btn btn-outline" style="font-size:.8rem;padding:6px 14px;margin-top:6px"
+                onclick="saveMemo(${r.id})">메모 저장</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-red" style="font-size:.8rem;padding:6px 14px"
+                onclick="deleteRecipe(${r.id})">🗑 삭제</button>
+      </div>
+    </div>`;
+  return card;
+}
+
+function toggleRc(btn) {
+  const card = btn.closest('.rc');
+  const isExp = card.classList.toggle('expanded');
+  btn.textContent = isExp ? '접기 ▲' : '상세 보기 ▼';
+}
+
+// ── 별점 ──────────────────────────────────────────────────
+function renderStars(rid, current) {
+  return [1,2,3,4,5].map(n =>
+    `<span class="star ${n <= current ? 'on' : ''}"
+           onclick="setRating(${rid}, ${n})">★</span>`
+  ).join('');
+}
+
+async function setRating(rid, val) {
+  const res = await Auth.apiFetch(`/api/recipes/${rid}`, {
+    method:'PUT', body: JSON.stringify({rating: val}),
+  });
+  if (res.ok) {
+    const card = document.querySelector(`.rc[data-id="${rid}"]`);
+    if (card) {
+      const starContainer = card.querySelectorAll('.star');
+      starContainer.forEach((s, i) => s.classList.toggle('on', i < val));
+    }
+    toast('평점이 저장됐습니다.');
+  }
+}
+
+// ── 메모 저장 ─────────────────────────────────────────────
+async function saveMemo(rid) {
+  const memo = document.getElementById(`memo-${rid}`).value;
+  const res  = await Auth.apiFetch(`/api/recipes/${rid}`, {
+    method:'PUT', body: JSON.stringify({memo}),
+  });
+  if (res.ok) toast('메모가 저장됐습니다.');
+  else toast('저장 실패');
+}
+
+// ── 레시피 삭제 ───────────────────────────────────────────
+async function deleteRecipe(rid) {
+  if (!confirm('이 레시피를 삭제할까요?')) return;
+  const res = await Auth.apiFetch(`/api/recipes/${rid}`, { method:'DELETE' });
+  if (res.ok) {
+    document.querySelector(`.rc[data-id="${rid}"]`)?.remove();
+    toast('삭제됐습니다.');
+    _totalRecipes--;
+    document.getElementById('recipe-count').textContent = `총 ${_totalRecipes}개`;
+  }
+}
+
+// ── JSON 내보내기 ─────────────────────────────────────────
+async function exportRecipes() {
+  const res = await Auth.apiFetch('/api/recipes/export');
+  if (!res.ok) { toast('내보내기 실패'); return; }
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'my_recipes.json';
+  a.click(); URL.revokeObjectURL(url);
+  toast('JSON 파일이 다운로드됩니다.');
+}
+
+// ── 분석 이력 ─────────────────────────────────────────────
+async function loadHistory() {
+  const res  = await Auth.apiFetch('/api/history');
+  if (!res.ok) return;
+  const data = await res.json();
+  const container = document.getElementById('history-container');
+  const empty     = document.getElementById('history-empty');
+  container.innerHTML = '';
+
+  if (!data.history.length) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  data.history.forEach(h => {
+    const ings     = (h.ingredients || []).slice(0, 6).map(i => i.name).join(', ');
+    const dateStr  = new Date(h.created_at).toLocaleDateString('ko-KR');
+    const card     = document.createElement('div');
+    card.className = 'history-card';
+    card.innerHTML = `
+      <div class="history-thumb">
+        ${h.thumbnail ? `<img src="${h.thumbnail}" alt="썸네일">` : '🧊'}
+      </div>
+      <div class="history-body">
+        <div class="history-date">${dateStr}</div>
+        <div class="history-ings">${ings}${h.ingredients.length > 6 ? ' ...' : ''}</div>
+        <div class="history-actions">
+          <button class="btn btn-outline" style="font-size:.75rem;padding:5px 10px"
+                  onclick="reuseHistory(${h.id})">🍳 레시피 재생성</button>
+          <button class="btn btn-red"     style="font-size:.75rem;padding:5px 10px"
+                  onclick="deleteHistory(${h.id})">🗑</button>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function reuseHistory(hid) {
+  const card = document.querySelector(`.history-card`);
+  // 이미 data를 통해 ingredient를 가져와야 함 — history를 재조회하는 대신 저장된 데이터 재활용
+  Auth.apiFetch('/api/history').then(r => r.json()).then(data => {
+    const h = data.history.find(x => x.id === hid);
+    if (!h) return;
+    localStorage.setItem('step1_ingredients', JSON.stringify(h.ingredients));
+    window.location.href = '/recipe';
+  });
+}
+
+async function deleteHistory(hid) {
+  if (!confirm('이 이력을 삭제할까요?')) return;
+  const res = await Auth.apiFetch(`/api/history/${hid}`, { method:'DELETE' });
+  if (res.ok) { toast('삭제됐습니다.'); loadHistory(); }
+}
+
+// ── 계정 삭제 ─────────────────────────────────────────────
+async function deleteAccount() {
+  if (!confirm('정말 계정을 삭제할까요? 모든 데이터가 영구 삭제됩니다.')) return;
+  if (!confirm('한 번 더 확인합니다. 계속하시겠습니까?')) return;
+  const res = await Auth.apiFetch('/api/auth/account', { method:'DELETE' });
+  if (res.ok) {
+    Auth.doLogout();
+    alert('계정이 삭제됐습니다.');
+    window.location.href = '/';
+  }
+}
+
+// ── 시작 ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // auth.js init 후 실행
+  setTimeout(init, 50);
+});
+</script>
+</body>
+</html>

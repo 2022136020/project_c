@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>냉장고 재료 인식</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green:  #2ecc71;
+    --green-d:#27ae60;
+    --blue:   #3498db;
+    --red:    #e74c3c;
+    --gray:   #f5f6fa;
+    --border: #dfe6e9;
+    --text:   #2d3436;
+    --muted:  #636e72;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(0,0,0,.08);
+  }
+
+  body {
+    font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--gray);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── 헤더 ── */
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+  }
+  header .logo { font-size: 1.5rem; }
+  header h1 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  header p  { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── 메인 ── */
+  main {
+    flex: 1;
+    max-width: 860px;
+    width: 100%;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+  }
+
+  /* ── 섹션 공통 ── */
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+  }
+
+  /* ── 업로드 영역 ── */
+  #drop-zone {
+    border: 2.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  #drop-zone.drag-over {
+    border-color: var(--green);
+    background: #f0fff4;
+  }
+  #drop-zone .icon { font-size: 3rem; margin-bottom: 12px; }
+  #drop-zone p { color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+  #drop-zone input[type=file] { display: none; }
+
+  /* ── 버튼 ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .btn-green  { background: var(--green);  color: #fff; }
+  .btn-green:hover:not(:disabled)  { background: var(--green-d); }
+  .btn-blue   { background: var(--blue);   color: #fff; }
+  .btn-blue:hover:not(:disabled)   { opacity: .88; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* ── 미리보기 ── */
+  #preview-section { display: none; }
+  #preview-section .preview-wrap {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  #preview-img {
+    width: 260px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .preview-info { flex: 1; min-width: 200px; }
+  .preview-info h3 { font-size: 1rem; margin-bottom: 8px; }
+  .preview-info .meta { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+  .preview-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ── 로딩 ── */
+  #loading-section { display: none; text-align: center; padding: 48px 0; }
+  .spinner {
+    width: 52px; height: 52px;
+    border: 5px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading-section p { color: var(--muted); font-size: .95rem; }
+  #loading-section .sub { font-size: .8rem; margin-top: 6px; }
+
+  /* ── 오류 ── */
+  #error-section { display: none; }
+  .error-box {
+    background: #fff5f5;
+    border: 1.5px solid #ffd0d0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .error-box .ei { font-size: 1.6rem; }
+  .error-box .et { font-weight: 600; margin-bottom: 4px; }
+  .error-box .em { color: var(--muted); font-size: .88rem; margin-bottom: 14px; }
+
+  /* ── 결과 ── */
+  #result-section { display: none; }
+  #result-section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .model-badge {
+    font-size: .7rem;
+    font-weight: 500;
+    background: #e8f8ef;
+    color: var(--green-d);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  /* 카테고리 그룹 */
+  .cat-group { margin-bottom: 24px; }
+  .cat-label {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .ingredient-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ingredient-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--gray);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: .88rem;
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:scale(1); } }
+  .ingredient-tag .qty { color: var(--muted); font-size: .78rem; }
+  .ingredient-tag .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color .15s;
+  }
+  .ingredient-tag .del-btn:hover { color: var(--red); }
+
+  /* 원문 폴백 */
+  .raw-text-box {
+    background: #f8f9fb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: .83rem;
+    color: var(--muted);
+    white-space: pre-wrap;
+    margin-bottom: 20px;
+  }
+
+  /* 재료 추가 폼 */
+  .add-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    padding: 16px;
+    background: var(--gray);
+    border-radius: 10px;
+  }
+  .add-form input, .add-form select {
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: .88rem;
+    background: #fff;
+    flex: 1;
+    min-width: 120px;
+  }
+  .add-form input:focus, .add-form select:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+
+  /* 하단 액션 */
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .ingredient-count {
+    margin-left: auto;
+    font-size: .85rem;
+    color: var(--muted);
+    align-self: center;
+  }
+
+  /* 스텝 인디케이터 */
+  .steps-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .85rem;
+    color: var(--muted);
+  }
+  .step-item.active { color: var(--green); font-weight: 600; }
+  .step-item.done   { color: var(--green-d); }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .step-item.active .step-dot { border-color: var(--green); color: var(--green); }
+  .step-item.done   .step-dot { border-color: var(--green-d); background: var(--green-d); color: #fff; }
+  .step-line { flex: 1; height: 2px; background: var(--border); margin: 0 4px; }
+  .step-line.done { background: var(--green-d); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧊</div>
+  <div>
+    <h1>냉장고 재료 인식</h1>
+    <p>Step 1 — 사진 업로드 &amp; 재료 추출</p>
+  </div>
+  <div id="auth-nav"></div>
+</header>
+<script src="/static/auth.js"></script>
+
+<main>
+
+  <!-- 스텝 바 -->
+  <div class="steps-bar">
+    <div class="step-item active" id="step1-indicator">
+      <div class="step-dot">1</div> 재료 인식
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-item" id="step2-indicator">
+      <div class="step-dot">2</div> 레시피 생성
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" id="step3-indicator">
+      <div class="step-dot">3</div> 저장
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- ① 업로드 -->
+    <div id="upload-section">
+      <div id="drop-zone">
+        <div class="icon">📷</div>
+        <p>냉장고 사진을 드래그하거나<br>클릭해서 업로드하세요</p>
+        <p style="font-size:.8rem;color:#b2bec3">JPG · PNG · WEBP · 최대 10 MB</p>
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp">
+        <button class="btn btn-green" onclick="document.getElementById('file-input').click()">
+          📁 파일 선택
+        </button>
+      </div>
+    </div>
+
+    <!-- ② 미리보기 -->
+    <div id="preview-section">
+      <div class="preview-wrap">
+        <img id="preview-img" src="" alt="미리보기">
+        <div class="preview-info">
+          <h3>업로드 완료</h3>
+          <p class="meta" id="file-meta"></p>
+          <div class="preview-actions">
+            <button class="btn btn-green" id="analyze-btn" onclick="analyze()">
+              🔍 재료 분석하기
+            </button>
+            <button class="btn btn-outline" onclick="reset()">
+              ↩ 다시 선택
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ 로딩 -->
+    <div id="loading-section">
+      <div class="spinner"></div>
+      <p>재료를 인식하는 중...</p>
+      <p class="sub" id="loading-model"></p>
+    </div>
+
+    <!-- ④ 오류 -->
+    <div id="error-section">
+      <div class="error-box">
+        <div class="ei">⚠️</div>
+        <div>
+          <div class="et" id="error-title">오류가 발생했습니다</div>
+          <div class="em" id="error-msg"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-blue" id="retry-btn">🔄 다시 시도</button>
+            <button class="btn btn-outline" onclick="reset()">↩ 처음으로</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑤ 결과 -->
+    <div id="result-section">
+      <h2>
+        인식된 재료
+        <span class="model-badge" id="model-badge"></span>
+      </h2>
+
+      <!-- 원문 폴백 (JSON 파싱 실패 시) -->
+      <div id="raw-section" style="display:none">
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">
+          ⚠️ JSON 파싱에 실패했습니다. 아래 원문을 참고해 직접 입력해 주세요.
+        </p>
+        <div class="raw-text-box" id="raw-text"></div>
+      </div>
+
+      <!-- 카테고리별 태그 -->
+      <div id="ingredient-groups"></div>
+
+      <!-- 재료 추가 -->
+      <div class="add-form">
+        <input type="text" id="add-name" placeholder="재료 이름 (예: 양파)">
+        <input type="text" id="add-qty"  placeholder="수량 (예: 1개)">
+        <select id="add-cat">
+          <option value="채소">채소</option>
+          <option value="육류">육류</option>
+          <option value="유제품">유제품</option>
+          <option value="조미료">조미료</option>
+          <option value="과일">과일</option>
+          <option value="음료">음료</option>
+          <option value="기타">기타</option>
+        </select>
+        <button class="btn btn-outline" onclick="addIngredient()">➕ 추가</button>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-outline" onclick="reset()">↩ 다시 분석</button>
+        <button class="btn btn-green" id="next-btn" onclick="goNext()" disabled>
+          레시피 생성하기 →
+        </button>
+        <span class="ingredient-count" id="count-label"></span>
+      </div>
+    </div>
+
+  </div><!-- /.card -->
+</main>
+
+<script>
+// ── 상태 ────────────────────────────────────────────
+let ingredients = [];   // [{name, quantity, category}, ...]
+let currentFile = null;
+
+const CATEGORY_ICONS = {
+  '채소':'🥬', '육류':'🥩', '유제품':'🧀',
+  '조미료':'🧂', '과일':'🍎', '음료':'🥤', '기타':'📦'
+};
+
+// ── 섹션 전환 ────────────────────────────────────────
+function showOnly(id) {
+  ['upload-section','preview-section','loading-section','error-section','result-section']
+    .forEach(s => document.getElementById(s).style.display = s === id ? 'block' : 'none');
+}
+
+// ── 업로드 이벤트 ────────────────────────────────────
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) handleFile(fileInput.files[0]);
+});
+
+function handleFile(file) {
+  const allowed = ['image/jpeg','image/png','image/webp'];
+  if (!allowed.includes(file.type)) {
+    alert('JPG, PNG, WEBP 형식만 지원합니다.');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    alert('파일 크기가 10 MB를 초과합니다.');
+    return;
+  }
+  currentFile = file;
+  const url = URL.createObjectURL(file);
+  document.getElementById('preview-img').src = url;
+  document.getElementById('file-meta').textContent =
+    `${file.name}  ·  ${(file.size / 1024).toFixed(0)} KB`;
+  showOnly('preview-section');
+}
+
+// ── 분석 요청 ────────────────────────────────────────
+async function analyze() {
+  if (!currentFile) return;
+
+  showOnly('loading-section');
+  document.getElementById('loading-model').textContent =
+    'google/gemma-3-27b-it:free 로 분석 중...';
+
+  const formData = new FormData();
+  formData.append('image', currentFile);
+
+  try {
+    const res  = await fetch('/api/analyze', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!res.ok) {
+      handleApiError(data, res.status);
+      return;
+    }
+
+    // 성공
+    ingredients = data.ingredients || [];
+    renderResult(data);
+
+  } catch (err) {
+    showError('네트워크 오류', '서버에 연결할 수 없습니다. 인터넷 연결을 확인해 주세요.', true);
+  }
+}
+
+function handleApiError(data, status) {
+  if (status === 429) {
+    const sec = data.retry_after || 60;
+    startRetryCountdown(sec);
+  } else {
+    showError(
+      '분석 실패',
+      data.message || '알 수 없는 오류가 발생했습니다.',
+      true
+    );
+  }
+}
+
+function startRetryCountdown(sec) {
+  let left = sec;
+  const btn = document.getElementById('retry-btn');
+  document.getElementById('error-title').textContent = 'Rate Limit — 잠시 후 자동 재시도';
+  document.getElementById('error-msg').textContent =
+    `모든 모델이 일시적으로 사용량 한도에 도달했습니다. ${left}초 후 자동 재시도합니다.`;
+  showOnly('error-section');
+  btn.disabled = true;
+
+  const iv = setInterval(() => {
+    left--;
+    document.getElementById('error-msg').textContent =
+      `모든 모델이 일시적으로 사용량 한도에 도달했습니다. ${left}초 후 자동 재시도합니다.`;
+    if (left <= 0) {
+      clearInterval(iv);
+      btn.disabled = false;
+      analyze();
+    }
+  }, 1000);
+
+  btn.onclick = () => { clearInterval(iv); analyze(); };
+}
+
+function showError(title, msg, showRetry) {
+  document.getElementById('error-title').textContent = title;
+  document.getElementById('error-msg').textContent   = msg;
+  document.getElementById('retry-btn').style.display = showRetry ? '' : 'none';
+  document.getElementById('retry-btn').onclick = analyze;
+  showOnly('error-section');
+}
+
+// ── 결과 렌더링 ──────────────────────────────────────
+function renderResult(data) {
+  // 모델 뱃지
+  document.getElementById('model-badge').textContent = data.model;
+
+  // JSON 파싱 실패 → 원문 표시
+  if (!data.ingredients) {
+    document.getElementById('raw-section').style.display = '';
+    document.getElementById('raw-text').textContent = data.raw_text || '';
+  } else {
+    document.getElementById('raw-section').style.display = 'none';
+  }
+
+  renderIngredients();
+  showOnly('result-section');
+
+  // Step 인디케이터
+  document.getElementById('step1-indicator').classList.add('done');
+  document.getElementById('step1-indicator').classList.remove('active');
+  document.getElementById('line1').classList.add('done');
+  document.getElementById('step2-indicator').classList.add('active');
+}
+
+function renderIngredients() {
+  const container = document.getElementById('ingredient-groups');
+  container.innerHTML = '';
+
+  // 카테고리별 그룹화
+  const groups = {};
+  ingredients.forEach(ing => {
+    const cat = ing.category || '기타';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(ing);
+  });
+
+  const catOrder = ['채소','과일','육류','유제품','조미료','음료','기타'];
+  const orderedCats = [
+    ...catOrder.filter(c => groups[c]),
+    ...Object.keys(groups).filter(c => !catOrder.includes(c))
+  ];
+
+  if (orderedCats.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px 0">인식된 재료가 없습니다. 직접 추가해 주세요.</p>';
+  }
+
+  orderedCats.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'cat-group';
+
+    const icon = CATEGORY_ICONS[cat] || '📦';
+    div.innerHTML = `<div class="cat-label">${icon} ${cat}</div><div class="ingredient-list" id="list-${cat}"></div>`;
+    container.appendChild(div);
+
+    groups[cat].forEach(ing => renderTag(ing, div.querySelector('.ingredient-list')));
+  });
+
+  // 카운트 & 버튼
+  const n = ingredients.length;
+  document.getElementById('count-label').textContent = `재료 ${n}개`;
+  document.getElementById('next-btn').disabled = n === 0;
+}
+
+function renderTag(ing, listEl) {
+  const tag = document.createElement('span');
+  tag.className = 'ingredient-tag';
+  tag.dataset.name = ing.name;
+  tag.innerHTML =
+    `<span>${ing.name}</span>` +
+    (ing.quantity ? `<span class="qty">${ing.quantity}</span>` : '') +
+    `<button class="del-btn" title="삭제" onclick="removeIngredient('${ing.name.replace(/'/g,"\\'")}')">✕</button>`;
+  listEl.appendChild(tag);
+}
+
+// ── 재료 편집 ────────────────────────────────────────
+function removeIngredient(name) {
+  ingredients = ingredients.filter(i => i.name !== name);
+  renderIngredients();
+}
+
+function addIngredient() {
+  const name = document.getElementById('add-name').value.trim();
+  const qty  = document.getElementById('add-qty').value.trim();
+  const cat  = document.getElementById('add-cat').value;
+  if (!name) { alert('재료 이름을 입력해 주세요.'); return; }
+  if (ingredients.some(i => i.name === name)) { alert('이미 추가된 재료입니다.'); return; }
+
+  ingredients.push({ name, quantity: qty, category: cat });
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-qty').value  = '';
+  renderIngredients();
+
+  // 추가한 재료로 포커스 이동
+  document.getElementById('add-name').focus();
+}
+
+// Enter 키로 재료 추가
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('add-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('add-qty').focus();
+  });
+  document.getElementById('add-qty').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addIngredient();
+  });
+});
+
+// ── 다음 단계 ────────────────────────────────────────
+function goNext() {
+  localStorage.setItem('step1_ingredients', JSON.stringify(ingredients));
+  window.location.href = '/recipe';
+}
+
+// ── 초기화 ──────────────────────────────────────────
+function reset() {
+  currentFile  = null;
+  ingredients  = [];
+  fileInput.value = '';
+  document.getElementById('step1-indicator').classList.remove('done');
+  document.getElementById('step1-indicator').classList.add('active');
+  document.getElementById('line1').classList.remove('done');
+  document.getElementById('step2-indicator').classList.remove('active');
+  showOnly('upload-section');
+}
+</script>
+</body>
+</html>
